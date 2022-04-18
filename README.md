@@ -1,7 +1,21 @@
-# jupyrefs
+jupyrefs
+========
 
-[![Github Actions Status](https://github.com/emprice/jupyrefs/workflows/Build/badge.svg)](https://github.com/emprice/jupyrefs/actions/workflows/build.yml)[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/emprice/jupyrefs/main?urlpath=lab)
 A weekend hobby project
+
+ + [Credits](#sparkles-credits)
+ + [Installing and uninstalling](#wrench-installing-and-uninstalling)
+   - [Requirements](#requirements)
+   - [Install](#install)
+   - [Uninstall](#uninstall)
+   - [Contributing](#contributing)
+
+# :sparkles: Credits
+
+- Icon by [FreeVector.com](https://www.freevector.com/chemistry-symbols-vector-27726),
+  with slight modification for compatibility with JupyterLab's light/dark theme settings
+
+# :wrench: Installing and uninstalling
 
 ## Requirements
 
@@ -74,10 +88,5 @@ folder is located. Then you can remove the symlink named `jupyrefs` within that 
 ### Packaging the extension
 
 See [RELEASE](RELEASE.md)
-
-## Credits
-
-- Icon by [FreeVector.com](https://www.freevector.com/chemistry-symbols-vector-27726),
-  with slight modification for compatibility with JupyterLab's light/dark theme settings
 
 <!-- vim: set ft=markdown: -->
