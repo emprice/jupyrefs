@@ -1,14 +1,13 @@
-jupyrefs
-========
+# jupyrefs
 
 A weekend hobby project
 
- + [Credits](#sparkles-credits)
- + [Installing and uninstalling](#wrench-installing-and-uninstalling)
-   - [Requirements](#requirements)
-   - [Install](#install)
-   - [Uninstall](#uninstall)
-   - [Contributing](#contributing)
+- [Credits](#sparkles-credits)
+- [Installing and uninstalling](#wrench-installing-and-uninstalling)
+  - [Requirements](#requirements)
+  - [Install](#install)
+  - [Uninstall](#uninstall)
+  - [Contributing](#contributing)
 
 # :sparkles: Credits
 
