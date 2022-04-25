@@ -9,18 +9,18 @@ A weekend hobby project
   - [Uninstall](#uninstall)
   - [Contributing](#contributing)
 
-# :sparkles: Credits
+## :sparkles: Credits
 
 - Icon by [FreeVector.com](https://www.freevector.com/chemistry-symbols-vector-27726),
   with slight modification for compatibility with JupyterLab's light/dark theme settings
 
-# :wrench: Installing and uninstalling
+## :wrench: Installing and uninstalling
 
-## Requirements
+### Requirements
 
 - JupyterLab >= 3.0
 
-## Install
+### Install
 
 To install the extension, execute:
 
@@ -28,7 +28,7 @@ To install the extension, execute:
 pip install jupyrefs
 ```
 
-## Uninstall
+### Uninstall
 
 To remove the extension, execute:
 
@@ -36,9 +36,9 @@ To remove the extension, execute:
 pip uninstall jupyrefs
 ```
 
-## Contributing
+### Contributing
 
-### Development install
+#### Development install
 
 Note: You will need NodeJS to build the extension package.
 
@@ -74,7 +74,7 @@ By default, the `jlpm build` command generates the source maps for this extensio
 jupyter lab build --minimize=False
 ```
 
-### Development uninstall
+#### Development uninstall
 
 ```bash
 pip uninstall jupyrefs
@@ -84,7 +84,7 @@ In development mode, you will also need to remove the symlink created by `jupyte
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
 folder is located. Then you can remove the symlink named `jupyrefs` within that folder.
 
-### Packaging the extension
+#### Packaging the extension
 
 See [RELEASE](RELEASE.md)
 
