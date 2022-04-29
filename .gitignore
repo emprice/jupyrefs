@@ -8,6 +8,7 @@ yarn.lock
 .ipynb_checkpoints
 *.tsbuildinfo
 jupyrefs/labextension
+*.log
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python

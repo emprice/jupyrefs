@@ -9,7 +9,7 @@ export function ForceGraph(
   links: any[], // an iterable of link objects (typically [{source, target}, …])
   nodeId = (d: any) => d.id, // given d in nodes, returns a unique identifier (string)
   nodeGroup: any = null, // given d in nodes, returns an (ordinal) value for color
-  colors: string[] = d3.schemeTableau10, // an array of color strings, for the node groups
+  colors: readonly string[] = d3.schemeTableau10, // an array of color strings, for the node groups
   nodeRadius = 5, // node radius, in pixels
   nodeGroups?: number[], // an array of ordinal values representing the node groups
   nodeTitle: any = null, // given d in nodes, a title string
@@ -27,7 +27,7 @@ export function ForceGraph(
   linkStrength?: number,
   width = 400, // outer width, in pixels
   height = 400 // outer height, in pixels
-): Promise<SVGElement> {
+): SVGElement | null {
   // Compute values.
   const N = d3.map(nodes, nodeId).map(intern);
   const LS = d3.map(links, linkSource).map(intern);
@@ -35,13 +35,16 @@ export function ForceGraph(
   if (nodeTitle === undefined) {
     nodeTitle = (d: any, i: number) => N[i];
   }
-  const T = nodeTitle === null ? null : d3.map(nodes, nodeTitle);
-  const G = nodeGroup === null ? null : d3.map(nodes, nodeGroup).map(intern);
-  const W =
+  const T: string[] | null =
+    nodeTitle === null ? null : d3.map(nodes, nodeTitle);
+  const G: number[] | null =
+    nodeGroup === null ? null : d3.map(nodes, nodeGroup).map(intern);
+  const W: number[] | null =
     typeof linkStrokeWidth !== 'function'
       ? null
       : d3.map(links, linkStrokeWidth);
-  const L = typeof linkStroke !== 'function' ? null : d3.map(links, linkStroke);
+  const L: string[] | null =
+    typeof linkStroke !== 'function' ? null : d3.map(links, linkStroke);
 
   // Replace the input nodes and links with mutable objects for the simulation.
   nodes = d3.map(nodes, (d: any, i: number) => ({ id: N[i] }));
@@ -56,7 +59,7 @@ export function ForceGraph(
   }
 
   // Construct the scales.
-  const color = nodeGroup === null ? null : d3.scaleOrdinal(nodeGroups, colors);
+  const color = nodeGroups ? d3.scaleOrdinal(nodeGroups, colors) : null;
 
   // Construct the forces.
   const forceNode = d3.forceManyBody();
@@ -116,16 +119,16 @@ export function ForceGraph(
     .call(drag(simulation));
 
   if (W) {
-    link.attr('stroke-width', (d: any) => W[d.index]);
+    link.attr('stroke-width', (d: any): number => W[d.index]);
   }
   if (L) {
-    link.attr('stroke', (d: any) => L[d.index]);
+    link.attr('stroke', (d: any): string => L[d.index]);
   }
-  if (G) {
-    node.attr('fill', (d: any) => color(G[d.index]));
+  if (G && color) {
+    node.attr('fill', (d: any): string => color(G[d.index]));
   }
   if (T) {
-    node.append('title').text((d: any) => T[d.index]);
+    node.append('title').text((d: any): string => T[d.index]);
   }
 
   function intern(value: any) {
@@ -134,7 +137,7 @@ export function ForceGraph(
       : value;
   }
 
-  function ticked() {
+  function ticked(): void {
     link
       .attr('x1', (d: any) => d.source.x)
       .attr('y1', (d: any) => d.source.y)
@@ -145,7 +148,7 @@ export function ForceGraph(
   }
 
   function drag(simulation: any) {
-    function dragstarted(event: any) {
+    function dragstarted(event: any): void {
       if (!event.active) {
         simulation.alphaTarget(0.3).restart();
       }
@@ -153,12 +156,12 @@ export function ForceGraph(
       event.subject.fy = event.subject.y;
     }
 
-    function dragged(event: any) {
+    function dragged(event: any): void {
       event.subject.fx = event.x;
       event.subject.fy = event.y;
     }
 
-    function dragended(event: any) {
+    function dragended(event: any): void {
       if (!event.active) {
         simulation.alphaTarget(0);
       }
@@ -166,11 +169,12 @@ export function ForceGraph(
       event.subject.fy = null;
     }
 
-    return d3
+    const fn = d3
       .drag()
       .on('start', dragstarted)
       .on('drag', dragged)
       .on('end', dragended);
+    return (elem: any, ...args: any) => fn(elem);
   }
 
   return Object.assign(svg.node(), { scales: { color } });
