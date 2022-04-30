@@ -4,9 +4,10 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 import { MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
+import { URLExt } from '@jupyterlab/coreutils';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { IRenderMimeRegistry, IRenderMime } from '@jupyterlab/rendermime';
 import {
   FileBrowser,
   FilterFileBrowserModel,
@@ -14,12 +15,15 @@ import {
 } from '@jupyterlab/filebrowser';
 import { Contents } from '@jupyterlab/services';
 import { LabIcon } from '@jupyterlab/ui-components';
-import { IRenderMime } from '@jupyterlab/rendermime-interfaces';
 
-import { Widget } from '@lumino/widgets';
+import { Widget, SingletonLayout } from '@lumino/widgets';
 import { Signal } from '@lumino/signaling';
 
-//import * as pdfjs from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist';
+import { PDFViewer } from 'pdfjs-dist/lib/web/pdf_viewer.js';
+import { EventBus } from 'pdfjs-dist/lib/web/event_utils.js';
+import { PDFLinkService } from 'pdfjs-dist/lib/web/pdf_link_service.js';
+import { NullL10n } from 'pdfjs-dist/lib/web/l10n_utils.js';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.js';
 //import { AnnotationFactory } from 'annotpdf';
 
@@ -32,7 +36,6 @@ type ContentsModel = Contents.IModel;
 
 type Renderer = IRenderMime.IRenderer;
 type MimeModel = IRenderMime.IMimeModel;
-//type RendererFactory = IRenderMime.IRendererFactory;
 
 const extName = 'jupyrefs';
 const extIcon = new LabIcon({
@@ -44,51 +47,64 @@ class JupyrefsRenderedPDF extends Widget implements Renderer {
   constructor() {
     super();
 
-    this.canvas = document.createElement('canvas');
-    this.node.appendChild(this.canvas);
-    this.context = this.canvas.getContext('2d');
+    this.node.style.height = 'inherit';
 
-    this.workerSrc = new URL('https://xkcd.com');
+    this.containerElem = document.createElement('div');
+    this.containerElem.style.overflow = 'auto';
+    this.containerElem.style.position = 'relative';
+    this.containerElem.style.height = 'inherit';
+
+    this.viewerElem = document.createElement('div');
+    this.viewerElem.classList.add('pdfViewer');
+    this.viewerElem.style.position = 'absolute';
+
+    this.containerElem.appendChild(this.viewerElem);
+    this.node.appendChild(this.containerElem);
+
+    this.eventBus = new EventBus();
+    this.linkService = new PDFLinkService({
+      eventBus: this.eventBus
+    });
+
+    this.viewer = new PDFViewer({
+      container: this.containerElem,
+      viewer: this.viewerElem,
+      eventBus: this.eventBus,
+      linkService: this.linkService,
+      l10n: NullL10n,
+      renderer: 'canvas'
+    });
+
+    this.linkService.setViewer(this.viewer);
+    this.eventBus.on('pagesinit', () => {
+      this.viewer.currentScaleValue = 'page-width';
+    });
   }
 
   async renderModel(model: MimeModel): Promise<void> {
     const data = model.data;
-    console.log(data);
-    console.log(workerSrc);
 
-    /*if (data && data.path && typeof data.path == 'string') {
-      const loadingTask = pdfjsLib.getDocument(data.path);
-      const pdf = await loadingTask.promise;
-      const page = await pdf.getPage(1);
+    if (data && data.path && typeof data.path == 'string') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
-      const scale = 1.5;
-      const viewport = page.getViewport({ scale });
-      const outputScale = window.devicePixelRatio || 1;
-
-      this.canvas.width = Math.floor(viewport.width * outputScale);
-      this.canvas.height = Math.floor(viewport.height * outputScale);
-      this.canvas.style.width = Math.floor(viewport.width) + "px";
-      this.canvas.style.height = Math.floor(viewport.height) + "px";
-
-      const transform = (outputScale !== 1) ?
-        [outputScale, 0, 0, outputScale, 0, 0] : null;
-
-      if (this.context && transform && viewport) {
-        const renderContext = {
-          canvasContext: this.context,
-          transform: transform,
-          viewport: viewport
-        };
-        page.render(renderContext);
-      }
-    }*/
+      const url = URLExt.join('/tree', data.path);
+      const loadingTask = pdfjsLib.getDocument({
+        url: url,
+        enableXfa: true
+      });
+      const pdfDocument = await loadingTask.promise;
+      this.viewer.setDocument(pdfDocument);
+      this.linkService.setDocument(pdfDocument, null);
+    }
   }
 
   static mimeType = 'application/pdf';
 
-  protected context: any;
-  protected workerSrc: URL;
-  protected canvas: HTMLCanvasElement;
+  protected viewer;
+  protected eventBus;
+  protected linkService;
+  protected viewerElem: HTMLDivElement;
+  protected containerElem: HTMLDivElement;
 }
 
 class JupyrefsManager extends Widget {
@@ -98,10 +114,12 @@ class JupyrefsManager extends Widget {
     /*this.makeForceGraph().then(chart => {
       this.node.appendChild(chart);
     });*/
+    this.layout = new SingletonLayout({ fitPolicy: 'set-no-constraint' });
   }
 
-  addDocument(renderer: Renderer, model: MimeModel): void {
-    renderer.renderModel(model);
+  async addDocument(renderer: Renderer, model: MimeModel): Promise<void> {
+    await renderer.renderModel(model);
+    (this.layout as SingletonLayout).widget = renderer;
   }
 
   protected async makeForceGraph() {
@@ -212,8 +230,6 @@ class JupyrefsDirListing extends DirListing {
 
   protected handleOpen(item: ContentsModel): void {
     if (item.type === 'file') {
-      /*this.model.manager.openOrReveal(item.path,
-        undefined, undefined, { activate: false });*/
       this._openFileSignal.emit(item);
     } else {
       super.handleOpen(item);
@@ -282,10 +298,10 @@ async function activate(
         browser.title.icon = extIcon;
       }
 
-      browser.openFile.connect((sender, args) => {
+      browser.openFile.connect(async function (sender, args) {
         const renderer = mimereg.createRenderer(args.mimetype);
         const model = mimereg.createModel({ data: { ...args } });
-        main.content.addDocument(renderer, model);
+        await main.content.addDocument(renderer, model);
       });
 
       // Define the cleanup for the main widget
