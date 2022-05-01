@@ -6,6 +6,7 @@ import {
 import { MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
 import { URLExt } from '@jupyterlab/coreutils';
 import { ILauncher } from '@jupyterlab/launcher';
+import { IStateDB } from '@jupyterlab/statedb';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IRenderMimeRegistry, IRenderMime } from '@jupyterlab/rendermime';
 import {
@@ -18,6 +19,11 @@ import { LabIcon } from '@jupyterlab/ui-components';
 
 import { Widget, SingletonLayout } from '@lumino/widgets';
 import { Signal } from '@lumino/signaling';
+import { Message } from '@lumino/messaging';
+import {
+  ReadonlyPartialJSONArray,
+  ReadonlyPartialJSONValue
+} from '@lumino/coreutils';
 
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFViewer } from 'pdfjs-dist/lib/web/pdf_viewer.js';
@@ -84,7 +90,7 @@ class JupyrefsRenderedPDF extends Widget implements Renderer {
   async renderModel(model: MimeModel): Promise<void> {
     const data = model.data;
 
-    if (data && data.path && typeof data.path == 'string') {
+    if (data && data.path && typeof data.path === 'string') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
       const url = URLExt.join('/tree', data.path);
@@ -98,6 +104,10 @@ class JupyrefsRenderedPDF extends Widget implements Renderer {
     }
   }
 
+  protected onResize(msg: Widget.ResizeMessage): void {
+    this.viewer.currentScaleValue = 'page-width';
+  }
+
   static mimeType = 'application/pdf';
 
   protected viewer;
@@ -108,19 +118,44 @@ class JupyrefsRenderedPDF extends Widget implements Renderer {
 }
 
 class JupyrefsManager extends Widget {
-  constructor() {
+  constructor(mimereg: IRenderMimeRegistry, options: any) {
     super();
 
     /*this.makeForceGraph().then(chart => {
       this.node.appendChild(chart);
     });*/
+    this._mimereg = mimereg;
+    this._documents = new Array<ContentsModel>();
     this.layout = new SingletonLayout({ fitPolicy: 'set-no-constraint' });
+
+    if (options && options.openDocuments && this._mimereg) {
+      options.openDocuments.forEach((item: any) => {
+        this.addDocument(this._mimereg, item.args);
+      });
+    }
   }
 
-  async addDocument(renderer: Renderer, model: MimeModel): Promise<void> {
+  async addDocument(
+    mimereg: IRenderMimeRegistry,
+    args: ContentsModel
+  ): Promise<void> {
+    const renderer = mimereg.createRenderer(args.mimetype);
+    const model = mimereg.createModel({ data: { ...args } });
     await renderer.renderModel(model);
     (this.layout as SingletonLayout).widget = renderer;
+    this._documents.push(args);
   }
+
+  public get documents(): ReadonlyPartialJSONArray {
+    const ret = new Array<ReadonlyPartialJSONValue>();
+    this._documents.forEach(item => {
+      ret.push({ args: { ...item } });
+    });
+    return ret;
+  }
+
+  private _mimereg: IRenderMimeRegistry;
+  private _documents: Array<ContentsModel>;
 
   protected async makeForceGraph() {
     const doi = '10.1088/0004-637X/744/2/162';
@@ -218,25 +253,48 @@ class JupyrefsManager extends Widget {
   }
 }
 
+class JupyrefsMain extends MainAreaWidget<JupyrefsManager> {
+  constructor(mimereg: IRenderMimeRegistry, options: any) {
+    const content = new JupyrefsManager(mimereg, options);
+    super({ content: content });
+    this._closedSignal = new Signal<JupyrefsMain, Message>(this);
+  }
+
+  processMessage(msg: Message): void {
+    if (msg.type === 'close-request') {
+      this._closedSignal.emit(msg);
+    }
+    super.processMessage(msg);
+  }
+
+  public get closed(): Signal<JupyrefsMain, Message> {
+    return this._closedSignal;
+  }
+
+  protected _closedSignal: Signal<JupyrefsMain, Message>;
+}
+
 class JupyrefsDirListing extends DirListing {
   constructor(options: DirListingOptions) {
     super(options);
-    this._openFileSignal = new Signal<JupyrefsDirListing, ContentsModel>(this);
+    this._fileOpenedSignal = new Signal<JupyrefsDirListing, ContentsModel>(
+      this
+    );
   }
 
-  public get openFile(): Signal<JupyrefsDirListing, ContentsModel> {
-    return this._openFileSignal;
+  public get fileOpened(): Signal<JupyrefsDirListing, ContentsModel> {
+    return this._fileOpenedSignal;
   }
 
   protected handleOpen(item: ContentsModel): void {
     if (item.type === 'file') {
-      this._openFileSignal.emit(item);
+      this._fileOpenedSignal.emit(item);
     } else {
       super.handleOpen(item);
     }
   }
 
-  protected _openFileSignal: Signal<JupyrefsDirListing, ContentsModel>;
+  protected _fileOpenedSignal: Signal<JupyrefsDirListing, ContentsModel>;
 }
 
 class JupyrefsBrowser extends FileBrowser {
@@ -244,8 +302,8 @@ class JupyrefsBrowser extends FileBrowser {
     super(options);
   }
 
-  public get openFile(): Signal<JupyrefsDirListing, ContentsModel> {
-    return (this.listing as JupyrefsDirListing).openFile;
+  public get fileOpened(): Signal<JupyrefsDirListing, ContentsModel> {
+    return (this.listing as JupyrefsDirListing).fileOpened;
   }
 
   protected createDirListing(options: DirListingOptions): DirListing {
@@ -257,6 +315,7 @@ async function activate(
   app: JupyterFrontEnd,
   launcher: ILauncher,
   restorer: ILayoutRestorer,
+  statedb: IStateDB,
   docmgr: IDocumentManager,
   mimereg: IRenderMimeRegistry
 ): Promise<void> {
@@ -266,20 +325,23 @@ async function activate(
     defaultRank: 100,
     createRenderer: (options: any) => new JupyrefsRenderedPDF()
   };
+
   mimereg.addFactory(factory);
 
-  let main: MainAreaWidget<JupyrefsManager>;
+  let main: JupyrefsMain;
   let browser: JupyrefsBrowser;
 
+  const idOpenDocs = `${extName}:openDocuments`;
+
   // Add the command to the app
-  const command = `${extName}:start`;
-  app.commands.addCommand(command, {
+  const startCmd = `${extName}:start`;
+  app.commands.addCommand(startCmd, {
     label: 'Start Reference Manager',
     icon: extIcon,
-    execute: () => {
+    execute: async (options: any) => {
       if (!main || main.isDisposed) {
-        const content = new JupyrefsManager();
-        main = new MainAreaWidget({ content });
+        const docs = await statedb.fetch(idOpenDocs);
+        main = new JupyrefsMain(mimereg, { openDocuments: docs });
         main.id = `${extName}:main`;
         main.title.label = 'Reference Manager';
         main.title.closable = true;
@@ -298,15 +360,18 @@ async function activate(
         browser.title.icon = extIcon;
       }
 
-      browser.openFile.connect(async function (sender, args) {
-        const renderer = mimereg.createRenderer(args.mimetype);
-        const model = mimereg.createModel({ data: { ...args } });
-        await main.content.addDocument(renderer, model);
+      browser.fileOpened.connect(async (sender, args) => {
+        await main.content.addDocument(mimereg, args);
+        await statedb.save(idOpenDocs, main.content.documents);
       });
 
       // Define the cleanup for the main widget
       main.disposed.connect((sender, args) => {
         browser.dispose();
+      });
+
+      main.closed.connect(async (sender, args) => {
+        await statedb.remove(idOpenDocs);
       });
 
       if (!tracker.has(main)) {
@@ -332,18 +397,17 @@ async function activate(
 
   // Add the command to the launcher
   launcher.add({
-    command: command,
+    command: startCmd,
     category: 'Reference Manager',
     rank: 0
   });
 
-  // Track and restore the widget state
-  const tracker = new WidgetTracker<MainAreaWidget<JupyrefsManager>>({
+  const tracker = new WidgetTracker<JupyrefsMain>({
     namespace: `${extName}`
   });
 
   restorer.restore(tracker, {
-    command,
+    command: startCmd,
     name: () => `${extName}`
   });
 }
@@ -351,7 +415,13 @@ async function activate(
 const plugin: JupyterFrontEndPlugin<void> = {
   id: `${extName}:plugin`,
   autoStart: true,
-  requires: [ILauncher, ILayoutRestorer, IDocumentManager, IRenderMimeRegistry],
+  requires: [
+    ILauncher,
+    ILayoutRestorer,
+    IStateDB,
+    IDocumentManager,
+    IRenderMimeRegistry
+  ],
   activate: activate
 };
 
