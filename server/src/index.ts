@@ -1,14 +1,16 @@
+import * as config from '../../config.js';
+
 import cors from 'cors';
 import createApplication from 'express';
-import { Application, Router, json } from 'express';
+import * as express from 'express';
 import { MongoClient, Db } from 'mongodb';
 
 class JupyrefsRestMongo {
-  constructor(connectionString: string) {
+  constructor(mongoConn: string, staticsPath: string) {
     this._db = null;
-    this._client = new MongoClient(connectionString);
+    this._client = new MongoClient(mongoConn);
 
-    this._router = Router();
+    this._router = express.Router();
     this._router.route('/listings').get(async (req, res) => {
       if (this._db) {
         this._db
@@ -26,8 +28,9 @@ class JupyrefsRestMongo {
 
     this._app = createApplication();
     this._app.use(cors());
-    this._app.use(json());
+    this._app.use(express.json());
     this._app.use(this._router);
+    this._app.use('/files', express.static(staticsPath));
   }
 
   async go(port: number): Promise<void> {
@@ -40,16 +43,16 @@ class JupyrefsRestMongo {
     });
   }
 
-  private _app: Application;
   private _db: Db | null;
   private _client: MongoClient;
-  private _router: Router;
+
+  private _app: express.Application;
+  private _router: express.Router;
 }
 
-const port: number = 5000;
-const connectionString: string = 'mongodb://localhost:27017/sample_airbnb';
-
-const rest = new JupyrefsRestMongo(connectionString);
-rest.go(port);
+const mongoConn: string =
+  `${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}`;
+const rest = new JupyrefsRestMongo(mongoConn, config.staticsPath);
+rest.go(config.listenPort);
 
 // vim: set ft=typescript:

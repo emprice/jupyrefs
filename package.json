@@ -1,0 +1,19 @@
+{
+  "name": "jupyrefs",
+  "version": "1.0.0",
+  "description": "JupyterLab-based reference manager",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emprice/jupyrefs.git"
+  },
+  "author": {
+    "name": "Ellen M. Price",
+    "email": "ellen.price81@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/emprice/jupyrefs/issues"
+  },
+  "homepage": "https://github.com/emprice/jupyrefs#readme"
+}
