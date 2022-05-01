@@ -98,6 +98,7 @@ class JupyrefsRenderedPDF extends Widget implements Renderer {
         url: url,
         enableXfa: true
       });
+
       const pdfDocument = await loadingTask.promise;
       this.viewer.setDocument(pdfDocument);
       this.linkService.setDocument(pdfDocument, null);
@@ -130,17 +131,15 @@ class JupyrefsManager extends Widget {
 
     if (options && options.openDocuments && this._mimereg) {
       options.openDocuments.forEach((item: any) => {
-        this.addDocument(this._mimereg, item.args);
+        this.addDocument(item.args);
       });
     }
   }
 
-  async addDocument(
-    mimereg: IRenderMimeRegistry,
-    args: ContentsModel
-  ): Promise<void> {
-    const renderer = mimereg.createRenderer(args.mimetype);
-    const model = mimereg.createModel({ data: { ...args } });
+  async addDocument(args: ContentsModel): Promise<void> {
+    const renderer = this._mimereg.createRenderer(args.mimetype);
+    const model = this._mimereg.createModel({ data: { ...args } });
+
     await renderer.renderModel(model);
     (this.layout as SingletonLayout).widget = renderer;
     this._documents.push(args);
@@ -361,7 +360,7 @@ async function activate(
       }
 
       browser.fileOpened.connect(async (sender, args) => {
-        await main.content.addDocument(mimereg, args);
+        await main.content.addDocument(args);
         await statedb.save(idOpenDocs, main.content.documents);
       });
 

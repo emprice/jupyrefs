@@ -1,7 +1,7 @@
 {
-  "name": "jupyrefs",
-  "version": "0.1.0",
-  "description": "A weekend hobby project",
+  "name": "jupyrefs-client",
+  "version": "1.0.0",
+  "description": "JupyterLab reference manager",
   "keywords": [
     "jupyter",
     "jupyterlab",
@@ -11,10 +11,10 @@
   "bugs": {
     "url": "https://github.com/emprice/jupyrefs/issues"
   },
-  "license": "BSD-3-Clause",
+  "license": "MIT",
   "author": {
     "name": "Ellen M. Price",
-    "email": "emprice@uchicago.edu"
+    "email": "ellen.price81@gmail.com"
   },
   "engines": {
     "node": "14.x"
@@ -73,6 +73,7 @@
     "browserify-zlib": "^0.2.0",
     "crypto-browserify": "^3.12.0",
     "https-browserify": "^1.0.0",
+    "mongodb": "^4.5.0",
     "pdfjs-dist": "^2.13.216",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
