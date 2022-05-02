@@ -1,5 +1,5 @@
 {
-  "name": "jupyrefs-client",
+  "name": "jupyrefs",
   "version": "1.0.0",
   "description": "JupyterLab reference manager",
   "keywords": [

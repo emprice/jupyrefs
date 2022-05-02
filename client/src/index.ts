@@ -1,3 +1,5 @@
+import config from '../../jupyrefs.config.js';
+
 import {
   ILayoutRestorer,
   JupyterFrontEnd,
@@ -7,6 +9,8 @@ import { MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
 import { URLExt } from '@jupyterlab/coreutils';
 import { ILauncher } from '@jupyterlab/launcher';
 import { IStateDB } from '@jupyterlab/statedb';
+import { ServerConnection, Contents } from '@jupyterlab/services';
+import { ModelDB } from '@jupyterlab/observables';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IRenderMimeRegistry, IRenderMime } from '@jupyterlab/rendermime';
 import {
@@ -14,7 +18,6 @@ import {
   FilterFileBrowserModel,
   DirListing
 } from '@jupyterlab/filebrowser';
-import { Contents } from '@jupyterlab/services';
 import { LabIcon } from '@jupyterlab/ui-components';
 
 import { Widget, SingletonLayout } from '@lumino/widgets';
@@ -38,7 +41,13 @@ import { ForceGraph } from './plots.js';
 
 type FileBrowserOptions = FileBrowser.IOptions;
 type DirListingOptions = DirListing.IOptions;
+type ModelFactory = ModelDB.IFactory;
+type ServerSettings = ServerConnection.ISettings;
 type ContentsModel = Contents.IModel;
+type CreateOptions = Contents.ICreateOptions;
+type FetchOptions = Contents.IFetchOptions;
+type CheckpointModel = Contents.ICheckpointModel;
+type FileChangedArgs = Contents.IChangedArgs;
 
 type Renderer = IRenderMime.IRenderer;
 type MimeModel = IRenderMime.IMimeModel;
@@ -310,6 +319,96 @@ class JupyrefsBrowser extends FileBrowser {
   }
 }
 
+class JupyrefsDrive implements Contents.IDrive {
+  constructor(name: string, hostname: string) {
+    this.fileChanged = new Signal<JupyrefsDrive, FileChangedArgs>(this);
+    this.isDisposed = false;
+    this.name = name;
+    this.serverSettings = ServerConnection.makeSettings({
+      baseUrl: `http://localhost:${config.listenPort}`
+    });
+    this._api = '/drive/api/contents';
+  }
+
+  public fileChanged: Signal<JupyrefsDrive, FileChangedArgs>;
+  public readonly isDisposed: boolean;
+  public readonly modelDBFactory?: ModelFactory;
+  public readonly name: string;
+  public readonly serverSettings: ServerSettings;
+
+  private _api: string;
+
+  protected makeUrl(...args: string[]): string {
+    const parts = args.map(path => URLExt.encodeParts(path));
+    const baseUrl: string = this.serverSettings.baseUrl;
+    return URLExt.join(baseUrl, this._api, ...parts);
+  }
+
+  async copy(localPath: string, toLocalDir: string): Promise<ContentsModel> {
+    throw new Error('not implemented');
+  }
+
+  async createCheckpoint(localPath: string): Promise<CheckpointModel> {
+    throw new Error('not implemented');
+  }
+
+  async delete(localPath: string): Promise<void> {
+    throw new Error('not implemented');
+  }
+
+  async deleteCheckpoint(localPath: string, checkpointId: string): Promise<void> {
+    throw new Error('not implemented');
+  }
+
+  async dispose(): Promise<void> {
+    throw new Error('not implemented');
+  }
+
+  async get(localPath: string, options?: FetchOptions): Promise<ContentsModel> {
+    let url: string = this.makeUrl(localPath);
+
+    if (options) {
+      const content = options.content ? '1' : '0';
+      const params = Object.assign(Object.assign({}, options), { content });
+      url += URLExt.objectToQueryString(params);
+    }
+
+    const response = await ServerConnection.makeRequest(url, {}, this.serverSettings);
+    if (response.status !== 200) {
+      const err = await ServerConnection.ResponseError.create(response);
+      throw err;
+    }
+
+    const data = await response.json();
+    Contents.validateContentsModel(data);
+    return data;
+  }
+
+  async getDownloadUrl(localPath: string): Promise<string> {
+    throw new Error('not implemented');
+  }
+
+  async listCheckpoints(localPath: string): Promise<CheckpointModel[]> {
+    throw new Error('not implemented');
+  }
+
+  async newUntitled(options?: CreateOptions): Promise<ContentsModel> {
+    throw new Error('not implemented');
+  }
+
+  async rename(oldLocalPath: string, newLocalPath: string): Promise<ContentsModel> {
+    throw new Error('not implemented');
+  }
+
+  async restoreCheckpoint(localPath: string, checkpointId: string): Promise<void> {
+    throw new Error('not implemented');
+  }
+
+  async save(localPath: string, options?: Partial<ContentsModel>): Promise<ContentsModel> {
+    throw new Error('not implemented');
+  }
+}
+
 async function activate(
   app: JupyterFrontEnd,
   launcher: ILauncher,
@@ -326,6 +425,10 @@ async function activate(
   };
 
   mimereg.addFactory(factory);
+
+  const drive = new JupyrefsDrive(`${extName}`,
+    `http://localhost:${config.listenPort}/drive`);
+  docmgr.services.contents.addDrive(drive);
 
   let main: JupyrefsMain;
   let browser: JupyrefsBrowser;
@@ -349,7 +452,8 @@ async function activate(
       if (!browser || browser.isDisposed) {
         const model = new FilterFileBrowserModel({
           manager: docmgr,
-          filter: value => value.mimetype === 'application/pdf'
+          filter: value => value.mimetype === 'application/pdf',
+          driveName: `${extName}`
         });
 
         browser = new JupyrefsBrowser({

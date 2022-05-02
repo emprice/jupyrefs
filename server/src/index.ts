@@ -1,17 +1,18 @@
-import * as config from '../../config.js';
+import config from '../../jupyrefs.config.js';
+import { contentsGet } from './contents.js';
 
 import cors from 'cors';
 import createApplication from 'express';
-import * as express from 'express';
+import { Application, Request, Response, json } from 'express';
 import { MongoClient, Db } from 'mongodb';
 
-class JupyrefsRestMongo {
+class JupyrefsRestApi {
   constructor(mongoConn: string, staticsPath: string) {
     this._db = null;
     this._client = new MongoClient(mongoConn);
 
-    this._router = express.Router();
-    this._router.route('/listings').get(async (req, res) => {
+    this._mongoApi = createApplication();
+    this._mongoApi.route('/listings').get(async (req: Request, res: Response) => {
       if (this._db) {
         this._db
           .collection('listingsAndReviews')
@@ -26,11 +27,15 @@ class JupyrefsRestMongo {
       }
     });
 
+    this._contentsApi = createApplication();
+    this._contentsApi.route('/').get(contentsGet(staticsPath));
+
     this._app = createApplication();
     this._app.use(cors());
-    this._app.use(express.json());
-    this._app.use(this._router);
-    this._app.use('/files', express.static(staticsPath));
+    this._app.use(json());
+
+    this._app.use('/drive/api/contents', this._contentsApi);
+    this._app.use('/mongo/api', this._mongoApi);
   }
 
   async go(port: number): Promise<void> {
@@ -46,13 +51,15 @@ class JupyrefsRestMongo {
   private _db: Db | null;
   private _client: MongoClient;
 
-  private _app: express.Application;
-  private _router: express.Router;
+  private _app: Application;
+  private _mongoApi: Application;
+
+  private _contentsApi: Application;
 }
 
 const mongoConn: string =
   `${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}`;
-const rest = new JupyrefsRestMongo(mongoConn, config.staticsPath);
+const rest = new JupyrefsRestApi(mongoConn, config.staticsPath);
 rest.go(config.listenPort);
 
 // vim: set ft=typescript:
