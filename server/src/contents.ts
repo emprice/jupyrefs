@@ -2,13 +2,14 @@ import * as fs from 'fs/promises';
 import { constants } from 'fs';
 import * as path from 'path';
 import { Request, Response } from 'express';
+import * as mime from 'mime-types';
 
 interface Content {
   content?: any;
   created?: string;
   format?: string | null;
   last_modified?: string;
-  mimetype?: string;
+  mimetype?: string | null;
   name?: string;
   path?: string;
   size?: number | null;
@@ -76,8 +77,10 @@ export function contentsGet(root: string) {
 
                 if (stat.isFile()) {
                   part.type = 'file';
+                  part.mimetype = mime.lookup(item) || null;
                 } else if (stat.isDirectory()) {
                   part.type = 'directory';
+                  part.mimetype = null;
                 } else {
                   return; // unknown type, skip for now
                 }

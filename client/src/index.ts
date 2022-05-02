@@ -446,6 +446,7 @@ async function activate(
         main = new JupyrefsMain(mimereg, { openDocuments: docs });
         main.id = `${extName}:main`;
         main.title.label = 'Reference Manager';
+        main.title.icon = extIcon;
         main.title.closable = true;
       }
 
