@@ -4,52 +4,7 @@
  */
 
 :root {
-  --jprefs-brand-color1: #8fbcbb;
-}
-
-.jprefs-filebrowser {
-  color: var(--jp-ui-font-color1);
-  background: var(--jp-layout-color1);
-  font-size: var(--jp-ui-font-size1);
-}
-
-.jprefs-dirlisting-branch {
-  margin: 0;
-  padding: 0;
-  overflow: auto;
-  list-style-type: none;
-}
-
-.jprefs-dirlisting-item {
-  display: flex;
-  flex-direction: column;
-  padding: 4px 12px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-.jprefs-dirlisting-item.jprefs-mod-selected {
-  color: var(--jp-ui-inverse-font-color1);
-  background: var(--jprefs-brand-color1);
-}
-
-.jprefs-dirlisting-item:not(.jprefs-mod-selectable) {
-  color: var(--jp-ui-font-color2);
-  font-style: italic;
-  font-size: 0.9em;
-}
-
-.jprefs-dirlisting-item.jprefs-mod-selectable:hover:not(.jprefs-mod-selected) {
-  background: var(--jp-layout-color2);
-}
-
-.jprefs-dirlisting-itemtext {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  user-select: none;
+  --jupyrefs-brand-color1: #8fbcbb;
 }
 
 /* vim: set ft=css: */

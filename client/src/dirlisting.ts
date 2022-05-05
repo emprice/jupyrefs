@@ -4,7 +4,6 @@ import { IBrowserModel } from './interfaces';
 import { Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
 
-import { Contents } from '@jupyterlab/services';
 import {
   ITranslator,
   TranslationBundle,
@@ -30,19 +29,26 @@ export class JupyrefsDirListing extends Widget {
     super();
 
     this.model = options.model;
-    this.translator = options.translator || nullTranslator;
     this.addClass(makeClass(containerClass));
 
+    this.translator = options.translator || nullTranslator;
     this._trans = this.translator.load('jupyterlab');
-    this._dirOpened = new Signal<JupyrefsDirListing, string>(this);
-    this._fileOpened = new Signal<JupyrefsDirListing, string>(this);
 
-    this._expanded = new Set<string>();
+    this._dirOpened = new Signal<Widget, string>(this);
+    this._fileOpened = new Signal<Widget, string>(this);
   }
 
   public async refresh(): Promise<void> {
     const content = await this.buildTree();
     this.node.replaceChildren(content);
+  }
+
+  public get dirOpened(): Signal<Widget, string> {
+    return this._dirOpened;
+  }
+
+  public get fileOpened(): Signal<Widget, string> {
+    return this._fileOpened;
   }
 
   protected async buildTree(rootPath = ''): Promise<Element> {
@@ -80,6 +86,7 @@ export class JupyrefsDirListing extends Widget {
         elem.appendChild(row);
 
         row.addEventListener('click', event => {
+          const target = event.currentTarget as HTMLElement;
           const cls = makeClass(selectedClass);
 
           const selected = list.querySelectorAll(`.${cls}`);
@@ -87,20 +94,25 @@ export class JupyrefsDirListing extends Widget {
             e.classList.remove(cls);
           }
 
-          row.classList.add(cls);
+          target.classList.add(cls);
         });
 
         if (item.type === 'directory') {
           row.dataset.expanded = 'false';
           row.addEventListener('dblclick', async event => {
             if (event.currentTarget) {
-              if (row.dataset.expanded === 'false') {
-                const cls = makeClass(expandedClass);
-                row.classList.add(cls);
+              const target = event.currentTarget as HTMLElement;
+              const cls = makeClass(expandedClass);
 
-                const sublist = await this.buildTree(row.dataset.path);
+              if (target.dataset.expanded === 'false') {
+                target.classList.add(cls);
+                const sublist = await this.buildTree(target.dataset.path);
                 elem.appendChild(sublist);
-                row.dataset.expanded = 'true';
+                target.dataset.expanded = 'true';
+              } else if (target.dataset.expanded === 'true') {
+                target.classList.remove(cls);
+                elem.replaceChildren(target);
+                target.dataset.expanded = 'false';
               }
             }
           });
@@ -113,30 +125,13 @@ export class JupyrefsDirListing extends Widget {
     return list;
   }
 
-  public get dirOpened(): Signal<JupyrefsDirListing, string> {
-    return this._dirOpened;
-  }
-
-  public get fileOpened(): Signal<JupyrefsDirListing, string> {
-    return this._fileOpened;
-  }
-
-  protected handleOpen(item: Contents.IModel): void {
-    if (item.type === 'file') {
-      this._fileOpened.emit(item.path);
-    } else if (item.type === 'directory') {
-      this._dirOpened.emit(item.path);
-    }
-  }
-
   protected model: IBrowserModel;
   protected translator: ITranslator;
 
-  private _expanded: Set<string>;
+  private _dirOpened: Signal<Widget, string>;
+  private _fileOpened: Signal<Widget, string>;
 
   private _trans: TranslationBundle;
-  private _dirOpened: Signal<JupyrefsDirListing, string>;
-  private _fileOpened: Signal<JupyrefsDirListing, string>;
 }
 
 // vim: set ft=typescript:

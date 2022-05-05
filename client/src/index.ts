@@ -19,9 +19,9 @@ import { Widget, SingletonLayout } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 import { ReadonlyPartialJSONArray } from '@lumino/coreutils';
 
+import { extName } from './common';
 import extIconStr from '!./assets/icon_primary.svg';
 
-const extName = 'jupyrefs';
 const extIcon = new LabIcon({
   name: `${extName}:icon`,
   svgstr: extIconStr
@@ -104,7 +104,7 @@ async function activate(
   mimereg.addFactory(factory);
 
   const drive = new JupyrefsDrive({
-    name: `${extName}`
+    name: `${extName}drive`
   });
   docmgr.services.contents.addDrive(drive);
 
@@ -176,12 +176,12 @@ async function activate(
   });
 
   const tracker = new WidgetTracker<MainAreaWidget<JupyrefsManager>>({
-    namespace: `${extName}`
+    namespace: extName
   });
 
   restorer.restore(tracker, {
     command: startCmd,
-    name: () => `${extName}`
+    name: () => extName
   });
 }
 

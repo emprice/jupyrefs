@@ -1,0 +1,52 @@
+.jupyrefs-filebrowser {
+  color: var(--jp-ui-font-color1);
+  background: var(--jp-layout-color1);
+  font-size: var(--jp-ui-font-size1);
+  display: flex;
+  flex-direction: column;
+}
+
+.jupyrefs-dirlisting {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.jupyrefs-dirlisting-branch {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.jupyrefs-dirlisting-item {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 12px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.jupyrefs-dirlisting-item.jupyrefs-mod-selected {
+  color: var(--jp-ui-inverse-font-color1);
+  background: var(--jupyrefs-brand-color1);
+}
+
+.jupyrefs-dirlisting-item:not(.jupyrefs-mod-selectable) {
+  color: var(--jp-ui-font-color2);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.jupyrefs-dirlisting-item.jupyrefs-mod-selectable:hover:not(.jupyrefs-mod-selected) {
+  background: var(--jp-layout-color2);
+}
+
+.jupyrefs-dirlisting-itemtext {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+/* vim: set ft=css: */

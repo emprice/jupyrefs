@@ -69,7 +69,7 @@ export class JupyrefsBrowser extends Widget {
     });
     this.listing.id = 'listing';
 
-    this.layout = new PanelLayout();
+    this.layout = new PanelLayout({ fitPolicy: 'set-no-constraint' });
     this.layout.addWidget(this.toolbar);
     this.layout.addWidget(this.listing);
 
@@ -79,7 +79,7 @@ export class JupyrefsBrowser extends Widget {
     })() as unknown as JupyrefsBrowser;
   }
 
-  public get fileOpened(): Signal<JupyrefsDirListing, string> {
+  public get fileOpened(): Signal<Widget, string> {
     return this.listing.fileOpened;
   }
 

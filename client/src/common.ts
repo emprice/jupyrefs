@@ -1,7 +1,7 @@
-const prefix = 'jprefs';
+export const extName = 'jupyrefs';
 
 export function makeClass(...parts: string[]): string {
-  const allParts = [prefix, ...parts];
+  const allParts = [extName, ...parts];
   return allParts.join('-');
 }
 
