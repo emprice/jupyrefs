@@ -14,7 +14,6 @@ import { IStateDB } from '@jupyterlab/statedb';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { LabIcon } from '@jupyterlab/ui-components';
-import { Contents } from '@jupyterlab/services';
 
 import { Widget, SingletonLayout } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
@@ -27,10 +26,6 @@ const extIcon = new LabIcon({
   name: `${extName}:icon`,
   svgstr: extIconStr
 });
-
-interface IAddDocument {
-  path: string;
-}
 
 class JupyrefsManager extends Widget {
   constructor(
@@ -48,7 +43,9 @@ class JupyrefsManager extends Widget {
     this.layout = new SingletonLayout({ fitPolicy: 'set-no-constraint' });
 
     return (async () => {
-      const docs = (await this._statedb.fetch(JupyrefsManager.idOpenDocs)) as string[];
+      const docs = (await this._statedb.fetch(
+        JupyrefsManager.idOpenDocs
+      )) as string[];
       if (docs) {
         docs.forEach(async (item: string) => {
           await this.openDocument(item);
@@ -66,8 +63,10 @@ class JupyrefsManager extends Widget {
     this.layout.widget = renderer;
 
     this._documents.push(path);
-    await this._statedb.save(JupyrefsManager.idOpenDocs,
-      this._documents as ReadonlyPartialJSONArray);
+    await this._statedb.save(
+      JupyrefsManager.idOpenDocs,
+      this._documents as ReadonlyPartialJSONArray
+    );
   }
 
   async processMessage(msg: Message): Promise<void> {

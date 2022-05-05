@@ -3,19 +3,22 @@ import { IBrowserModel } from './interfaces';
 
 import { Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
-import { toArray } from '@lumino/algorithm';
 
 import { Contents } from '@jupyterlab/services';
-import { ITranslator, TranslationBundle, nullTranslator } from '@jupyterlab/translation';
+import {
+  ITranslator,
+  TranslationBundle,
+  nullTranslator
+} from '@jupyterlab/translation';
 
-const containerClass: string = 'DirListing';
-const branchClass: string = 'branch';
-const itemClass: string = 'item';
-const itemTextClass: string = 'itemText';
+const containerClass = 'dirlisting';
+const branchClass = 'branch';
+const itemClass = 'item';
+const itemTextClass = 'itemtext';
 
-const selectableClass: string = 'mod-selectable';
-const selectedClass: string = 'mod-selected';
-const expandedClass: string = 'mod-expanded';
+const selectableClass = 'mod-selectable';
+const selectedClass = 'mod-selected';
+const expandedClass = 'mod-expanded';
 
 interface IOptions {
   model: IBrowserModel;
@@ -42,13 +45,13 @@ export class JupyrefsDirListing extends Widget {
     this.node.replaceChildren(content);
   }
 
-  protected async buildTree(rootPath: string = ''): Promise<Element> {
+  protected async buildTree(rootPath = ''): Promise<Element> {
     const response = await this.model.items(rootPath);
 
     const list = document.createElement('ul');
     list.classList.add(makeClass(containerClass, branchClass));
 
-    if (response.length == 0) {
+    if (response.length === 0) {
       const row = document.createElement('div');
       row.innerHTML = '(no items)';
       row.classList.add(makeClass(containerClass, itemClass));
@@ -58,7 +61,7 @@ export class JupyrefsDirListing extends Widget {
 
       list.appendChild(elem);
     } else {
-      response.forEach((item) => {
+      response.forEach(item => {
         const elem = document.createElement('li');
         const row = document.createElement('div');
 
@@ -76,11 +79,11 @@ export class JupyrefsDirListing extends Widget {
 
         elem.appendChild(row);
 
-        row.addEventListener('click', (event) => {
+        row.addEventListener('click', event => {
           const cls = makeClass(selectedClass);
 
           const selected = list.querySelectorAll(`.${cls}`);
-          for (let e of selected) {
+          for (const e of selected) {
             e.classList.remove(cls);
           }
 
@@ -89,9 +92,8 @@ export class JupyrefsDirListing extends Widget {
 
         if (item.type === 'directory') {
           row.dataset.expanded = 'false';
-          row.addEventListener('dblclick', async (event) => {
+          row.addEventListener('dblclick', async event => {
             if (event.currentTarget) {
-
               if (row.dataset.expanded === 'false') {
                 const cls = makeClass(expandedClass);
                 row.classList.add(cls);
@@ -122,7 +124,7 @@ export class JupyrefsDirListing extends Widget {
   protected handleOpen(item: Contents.IModel): void {
     if (item.type === 'file') {
       this._fileOpened.emit(item.path);
-    } else if (item.type == 'directory') {
+    } else if (item.type === 'directory') {
       this._dirOpened.emit(item.path);
     }
   }

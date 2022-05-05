@@ -1,5 +1,4 @@
 import { Widget } from '@lumino/widgets';
-import { Contents } from '@jupyterlab/services';
 import { IRenderMime } from '@jupyterlab/rendermime';
 
 import * as pdfjsLib from 'pdfjs-dist';
@@ -8,7 +7,7 @@ import { EventBus } from 'pdfjs-dist/lib/web/event_utils.js';
 import { PDFLinkService } from 'pdfjs-dist/lib/web/pdf_link_service.js';
 import { NullL10n } from 'pdfjs-dist/lib/web/l10n_utils.js';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.js';
-import { AnnotationFactory } from 'annotpdf';
+//import { AnnotationFactory } from 'annotpdf';
 
 export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
   constructor() {
@@ -51,7 +50,7 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
   async renderModel(model: IRenderMime.IMimeModel): Promise<void> {
     const content = model.data;
 
-    if (content && content.data && typeof content.data == 'string') {
+    if (content && content.data && typeof content.data === 'string') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
       const loadingTask = pdfjsLib.getDocument({

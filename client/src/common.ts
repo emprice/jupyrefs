@@ -1,4 +1,4 @@
-const prefix: string = 'jprefs';
+const prefix = 'jprefs';
 
 export function makeClass(...parts: string[]): string {
   const allParts = [prefix, ...parts];

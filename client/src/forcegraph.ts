@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 
 interface IOptions {
   nodeId: (d: any) => string; // given d in nodes, returns a unique identifier (string)
-  nodeGroup?: ((d: any) => number); // given d in nodes, returns an (ordinal) value for color
+  nodeGroup?: (d: any) => number; // given d in nodes, returns an (ordinal) value for color
   colors: readonly string[]; // an array of color strings, for the node groups
   nodeRadius: number; // node radius, in pixels
   nodeGroups?: number[]; // an array of ordinal values representing the node groups
@@ -66,13 +66,17 @@ export function makeForceGraph(
   const T: string[] | null =
     options.nodeTitle === undefined ? null : d3.map(nodes, options.nodeTitle);
   const G: number[] | null =
-    options.nodeGroup === undefined ? null : d3.map(nodes, options.nodeGroup).map(intern);
+    options.nodeGroup === undefined
+      ? null
+      : d3.map(nodes, options.nodeGroup).map(intern);
   const W: number[] | null =
     typeof options.linkStrokeWidth !== 'function'
       ? null
       : d3.map(links, options.linkStrokeWidth);
   const L: string[] | null =
-    typeof options.linkStroke !== 'function' ? null : d3.map(links, options.linkStroke);
+    typeof options.linkStroke !== 'function'
+      ? null
+      : d3.map(links, options.linkStroke);
 
   // Replace the input nodes and links with mutable objects for the simulation.
   nodes = d3.map(nodes, (d: any, i: number) => ({ id: N[i] }));
@@ -87,7 +91,9 @@ export function makeForceGraph(
   }
 
   // Construct the scales.
-  const color = options.nodeGroups ? d3.scaleOrdinal(options.nodeGroups, options.colors) : null;
+  const color = options.nodeGroups
+    ? d3.scaleOrdinal(options.nodeGroups, options.colors)
+    : null;
 
   // Construct the forces.
   const forceNode = d3.forceManyBody();
@@ -118,16 +124,26 @@ export function makeForceGraph(
     .create('svg')
     .attr('width', '100%')
     .attr('height', '100%')
-    .attr('viewBox', [-options.width / 2, -options.height / 2, options.width, options.height])
+    .attr('viewBox', [
+      -options.width / 2,
+      -options.height / 2,
+      options.width,
+      options.height
+    ])
     .attr('style', style.join(' '));
 
   const link = svg
     .append('g')
-    .attr('stroke', typeof options.linkStroke !== 'function' ? options.linkStroke : null)
+    .attr(
+      'stroke',
+      typeof options.linkStroke !== 'function' ? options.linkStroke : null
+    )
     .attr('stroke-opacity', options.linkStrokeOpacity)
     .attr(
       'stroke-width',
-      typeof options.linkStrokeWidth !== 'function' ? options.linkStrokeWidth : null
+      typeof options.linkStrokeWidth !== 'function'
+        ? options.linkStrokeWidth
+        : null
     )
     .attr('stroke-linecap', options.linkStrokeLinecap)
     .selectAll('line')

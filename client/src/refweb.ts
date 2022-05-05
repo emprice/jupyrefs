@@ -3,6 +3,16 @@ import { makeForceGraph } from './forcegraph';
 import { Widget } from '@lumino/widgets';
 import { Signal } from '@lumino/signaling';
 
+interface IPartialGraphSpec {
+  nodes: Set<string>;
+  links: Set<string[]>;
+}
+
+interface IFullGraphSpec {
+  nodes: Array<any>;
+  links: Array<any>;
+}
+
 const colors: string[] = [
   '#bf616a',
   '#8fbcbb',
@@ -40,12 +50,10 @@ export class JupyrefsReferenceWeb extends Widget {
     return this._ready;
   }
 
-  protected async buildNodesAndLinks(): Promise<{ nodes: Array<any>, links: Array<any> }> {
+  protected async buildNodesAndLinks(): Promise<IFullGraphSpec> {
     const doi = '10.1088/0004-637X/744/2/162';
-    const refs: { nodes: Set<string>; links: Set<string[]> } =
-      await this.buildReferences(doi, 0, 1);
-    const cits: { nodes: Set<string>; links: Set<string[]> } =
-      await this.buildCitations(doi, 0, 1);
+    const refs = await this.buildReferences(doi, 0, 1);
+    const cits = await this.buildCitations(doi, 0, 1);
 
     const nodes = new Set<string>();
     refs.nodes.forEach((item: string) => nodes.add(item));
@@ -80,7 +88,7 @@ export class JupyrefsReferenceWeb extends Widget {
     doi: string,
     level: number,
     maxLevel: number
-  ) {
+  ): IPartialGraphSpec {
     const allnodes = new Set<string>([doi]);
     const alllinks = new Set<string[]>();
 
@@ -101,7 +109,11 @@ export class JupyrefsReferenceWeb extends Widget {
     return { nodes: allnodes, links: alllinks };
   }
 
-  protected async buildCitations(doi: string, level: number, maxLevel: number) {
+  protected async buildCitations(
+    doi: string,
+    level: number,
+    maxLevel: number
+  ): IPartialGraphSpec {
     const allnodes = new Set<string>([doi]);
     const alllinks = new Set<string[]>();
 

@@ -1,7 +1,5 @@
 import { IBrowserModel } from './interfaces';
 
-import * as path from 'path';
-
 import { URLExt } from '@jupyterlab/coreutils';
 import { Contents } from '@jupyterlab/services';
 import { IDocumentManager } from '@jupyterlab/docmanager';
@@ -20,13 +18,18 @@ export class JupyrefsBrowserModel extends IBrowserModel {
     this._currentPath = '';
   }
 
-  public async items(relPath: string = ''): Promise<Contents.IModel[]> {
-    const absPath = URLExt.join(this._currentPath, this.stripDriveName(relPath));
+  public async items(relPath = ''): Promise<Contents.IModel[]> {
+    const absPath = URLExt.join(
+      this._currentPath,
+      this.stripDriveName(relPath)
+    );
     const fullPath = this.prependDriveName(absPath);
-    const contents = await this._docmgr.services.contents.get(fullPath, { content: true });
+    const contents = await this._docmgr.services.contents.get(fullPath, {
+      content: true
+    });
 
     if (contents.type === 'directory') {
-      return (contents.content as Contents.IModel[]);
+      return contents.content as Contents.IModel[];
     } else {
       return new Array<Contents.IModel>();
     }

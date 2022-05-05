@@ -37,7 +37,9 @@ export class JupyrefsDrive implements Contents.IDrive {
     throw new Error('not implemented');
   }
 
-  async createCheckpoint(localPath: string): Promise<Contents.ICheckpointModel> {
+  async createCheckpoint(
+    localPath: string
+  ): Promise<Contents.ICheckpointModel> {
     throw new Error('not implemented');
   }
 
@@ -45,7 +47,10 @@ export class JupyrefsDrive implements Contents.IDrive {
     throw new Error('not implemented');
   }
 
-  async deleteCheckpoint(localPath: string, checkpointId: string): Promise<void> {
+  async deleteCheckpoint(
+    localPath: string,
+    checkpointId: string
+  ): Promise<void> {
     throw new Error('not implemented');
   }
 
@@ -53,7 +58,10 @@ export class JupyrefsDrive implements Contents.IDrive {
     throw new Error('not implemented');
   }
 
-  async get(localPath: string, options?: Contents.IFetchOptions): Promise<Contents.IModel> {
+  async get(
+    localPath: string,
+    options?: Contents.IFetchOptions
+  ): Promise<Contents.IModel> {
     let url: string = this.makeUrl(localPath);
 
     if (options) {
@@ -62,7 +70,11 @@ export class JupyrefsDrive implements Contents.IDrive {
       url += URLExt.objectToQueryString(params);
     }
 
-    const response = await ServerConnection.makeRequest(url, {}, this.serverSettings);
+    const response = await ServerConnection.makeRequest(
+      url,
+      {},
+      this.serverSettings
+    );
     if (response.status !== 200) {
       const err = await ServerConnection.ResponseError.create(response);
       throw err;
@@ -77,23 +89,36 @@ export class JupyrefsDrive implements Contents.IDrive {
     throw new Error('not implemented');
   }
 
-  async listCheckpoints(localPath: string): Promise<Contents.ICheckpointModel[]> {
+  async listCheckpoints(
+    localPath: string
+  ): Promise<Contents.ICheckpointModel[]> {
     throw new Error('not implemented');
   }
 
-  async newUntitled(options?: Contents.ICreateOptions): Promise<Contents.IModel> {
+  async newUntitled(
+    options?: Contents.ICreateOptions
+  ): Promise<Contents.IModel> {
     throw new Error('not implemented');
   }
 
-  async rename(oldLocalPath: string, newLocalPath: string): Promise<Contents.IModel> {
+  async rename(
+    oldLocalPath: string,
+    newLocalPath: string
+  ): Promise<Contents.IModel> {
     throw new Error('not implemented');
   }
 
-  async restoreCheckpoint(localPath: string, checkpointId: string): Promise<void> {
+  async restoreCheckpoint(
+    localPath: string,
+    checkpointId: string
+  ): Promise<void> {
     throw new Error('not implemented');
   }
 
-  async save(localPath: string, options?: Partial<Contents.IModel>): Promise<Contents.IModel> {
+  async save(
+    localPath: string,
+    options?: Partial<Contents.IModel>
+  ): Promise<Contents.IModel> {
     throw new Error('not implemented');
   }
 }

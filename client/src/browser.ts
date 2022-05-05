@@ -4,12 +4,19 @@ import { JupyrefsDirListing } from './dirlisting';
 
 import { Signal } from '@lumino/signaling';
 import { Widget, PanelLayout } from '@lumino/widgets';
-import { Contents } from '@jupyterlab/services';
 import { Toolbar, ToolbarButton } from '@jupyterlab/apputils';
-import { newFolderIcon, fileUploadIcon, refreshIcon } from '@jupyterlab/ui-components';
-import { ITranslator, TranslationBundle, nullTranslator } from '@jupyterlab/translation';
+import {
+  newFolderIcon,
+  fileUploadIcon,
+  refreshIcon
+} from '@jupyterlab/ui-components';
+import {
+  ITranslator,
+  TranslationBundle,
+  nullTranslator
+} from '@jupyterlab/translation';
 
-const containerClass: string = 'FileBrowser';
+const containerClass = 'filebrowser';
 
 interface IOptions {
   id: string;
@@ -76,15 +83,15 @@ export class JupyrefsBrowser extends Widget {
     return this.listing.fileOpened;
   }
 
-  protected createNewDirectory() {
+  protected createNewDirectory(): void {
     // no-op
   }
 
-  protected uploadFile() {
+  protected uploadFile(): void {
     // no-op
   }
 
-  protected async refreshDirectory() {
+  protected async refreshDirectory(): Promise<void> {
     await this.listing.refresh();
   }
 
