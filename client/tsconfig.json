@@ -10,15 +10,16 @@
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true,
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
     "rootDir": "src",
+    "sourceMap": true,
     "strict": true,
     "strictNullChecks": true,
     "target": "es2017",
-    "types": []
+    "types": ["node"],
+    "skipLibCheck": true
   },
   "include": ["src/*"]
 }
