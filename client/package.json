@@ -67,8 +67,9 @@
     "@types/d3": "^7.1.0",
     "@types/webpack": "^5.28.0",
     "annotpdf": "^1.0.15",
-    "pdfjs-dist": "^2.13.216",
-    "joi": "^17.6.0"
+    "joi": "^17.6.0",
+    "marked": "^4.0.15",
+    "pdfjs-dist": "^2.13.216"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.1.0",
