@@ -88,7 +88,7 @@ export class JupyrefsReferenceWeb extends Widget {
     doi: string,
     level: number,
     maxLevel: number
-  ): IPartialGraphSpec {
+  ): Promise<IPartialGraphSpec> {
     const allnodes = new Set<string>([doi]);
     const alllinks = new Set<string[]>();
 
@@ -113,7 +113,7 @@ export class JupyrefsReferenceWeb extends Widget {
     doi: string,
     level: number,
     maxLevel: number
-  ): IPartialGraphSpec {
+  ): Promise<IPartialGraphSpec> {
     const allnodes = new Set<string>([doi]);
     const alllinks = new Set<string[]>();
 
