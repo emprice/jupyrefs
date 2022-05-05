@@ -9,7 +9,7 @@ import { Toolbar, ToolbarButton } from '@jupyterlab/apputils';
 import { newFolderIcon, fileUploadIcon, refreshIcon } from '@jupyterlab/ui-components';
 import { ITranslator, TranslationBundle, nullTranslator } from '@jupyterlab/translation';
 
-const prefix: string = 'FileBrowser';
+const containerClass: string = 'FileBrowser';
 
 interface IOptions {
   id: string;
@@ -28,7 +28,7 @@ export class JupyrefsBrowser extends Widget {
     this.id = options.id;
     this.model = options.model;
     this.translator = options.translator || nullTranslator;
-    this.addClass(this.makeClass());
+    this.addClass(makeClass(containerClass));
 
     this._trans = this.translator.load('jupyterlab');
 
@@ -50,7 +50,7 @@ export class JupyrefsBrowser extends Widget {
 
     this.toolbar = new Toolbar();
     this.toolbar.id = 'toolbar';
-    this.toolbar.addClass(this.makeClass('toolbar'));
+    this.toolbar.addClass(makeClass(containerClass, 'toolbar'));
 
     this.toolbar.addItem('newFolder', newFolder);
     this.toolbar.addItem('uploadFile', uploadFile);
@@ -61,7 +61,6 @@ export class JupyrefsBrowser extends Widget {
       translator: this.translator
     });
     this.listing.id = 'listing';
-    this.listing.addClass(this.makeClass('listing'));
 
     this.layout = new PanelLayout();
     this.layout.addWidget(this.toolbar);
@@ -97,11 +96,6 @@ export class JupyrefsBrowser extends Widget {
   protected translator: ITranslator;
 
   private _trans: TranslationBundle;
-
-  protected makeClass(...parts: string[]): string {
-    const allParts = [prefix, ...parts];
-    return makeClass(...allParts);
-  }
 }
 
 // vim: set ft=typescript:
