@@ -1,3 +1,4 @@
+import { makeClass } from './common';
 import { JupyrefsDrive } from './drive';
 import { JupyrefsBrowser } from './browser';
 import { JupyrefsBrowserModel } from './browsermodel';
@@ -40,6 +41,8 @@ class JupyrefsManager extends Widget {
     this._mimereg = mimereg;
 
     this._documents = new Array<string>();
+
+    this.addClass(makeClass('manager'));
     this.layout = new SingletonLayout({ fitPolicy: 'set-no-constraint' });
 
     return (async () => {
@@ -56,7 +59,9 @@ class JupyrefsManager extends Widget {
   }
 
   async openDocument(path: string): Promise<void> {
-    const model = await this._docmgr.services.contents.get(path);
+    const model = await this._docmgr.services.contents.get(path, {
+      content: true
+    });
     const renderer = this._mimereg.createRenderer(model.mimetype);
     const mimemodel = this._mimereg.createModel({ data: { ...model } });
     await renderer.renderModel(mimemodel);

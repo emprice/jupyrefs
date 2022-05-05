@@ -1,3 +1,5 @@
+import * as zlib from 'zlib';
+
 import { Signal } from '@lumino/signaling';
 import { URLExt } from '@jupyterlab/coreutils';
 import { ModelDB } from '@jupyterlab/observables';
@@ -64,11 +66,12 @@ export class JupyrefsDrive implements Contents.IDrive {
   ): Promise<Contents.IModel> {
     let url: string = this.makeUrl(localPath);
 
-    if (options) {
-      const content = options.content ? '1' : '0';
-      const params = Object.assign(Object.assign({}, options), { content });
-      url += URLExt.objectToQueryString(params);
-    }
+    const content = options && options.content ? '1' : '0';
+    const params = Object.assign(Object.assign({}, options), {
+      content: content,
+      format: 'base64'
+    });
+    url += URLExt.objectToQueryString(params);
 
     const response = await ServerConnection.makeRequest(
       url,
@@ -81,6 +84,13 @@ export class JupyrefsDrive implements Contents.IDrive {
     }
 
     const data = await response.json();
+    if (data.format === 'zlib') {
+      const compressed = data.content;
+      const raw = new Buffer(compressed, 'base64');
+      data.content = zlib.inflateSync(raw).toString('base64');
+      data.format = 'base64';
+    }
+
     Contents.validateContentsModel(data);
     return data;
   }

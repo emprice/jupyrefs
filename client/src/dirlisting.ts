@@ -97,7 +97,14 @@ export class JupyrefsDirListing extends Widget {
           target.classList.add(cls);
         });
 
-        if (item.type === 'directory') {
+        if (item.type === 'file') {
+          row.addEventListener('dblclick', async event => {
+            const target = event.currentTarget as HTMLElement;
+            if (target.dataset.path) {
+              this._fileOpened.emit(target.dataset.path);
+            }
+          });
+        } else if (item.type === 'directory') {
           row.dataset.expanded = 'false';
           row.addEventListener('dblclick', async event => {
             if (event.currentTarget) {

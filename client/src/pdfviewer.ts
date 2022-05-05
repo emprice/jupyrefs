@@ -1,3 +1,5 @@
+import { makeClass } from './common';
+
 import { Widget } from '@lumino/widgets';
 import { IRenderMime } from '@jupyterlab/rendermime';
 
@@ -9,23 +11,22 @@ import { NullL10n } from 'pdfjs-dist/lib/web/l10n_utils.js';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.js';
 //import { AnnotationFactory } from 'annotpdf';
 
+const containerClass = 'pdfviewer';
+
 export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
   constructor() {
     super();
 
-    this.node.style.height = 'inherit';
-
     this.containerElem = document.createElement('div');
-    this.containerElem.style.overflow = 'auto';
-    this.containerElem.style.position = 'relative';
-    this.containerElem.style.height = 'inherit';
+    this.containerElem.classList.add(makeClass(containerClass, 'container'));
 
     this.viewerElem = document.createElement('div');
     this.viewerElem.classList.add('pdfViewer');
-    this.viewerElem.style.position = 'absolute';
+    this.viewerElem.classList.add(makeClass(containerClass, 'viewer'));
 
     this.containerElem.appendChild(this.viewerElem);
     this.node.appendChild(this.containerElem);
+    this.addClass(makeClass(containerClass));
 
     this.eventBus = new EventBus();
     this.linkService = new PDFLinkService({
@@ -47,14 +48,15 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
     });
   }
 
-  async renderModel(model: IRenderMime.IMimeModel): Promise<void> {
-    const content = model.data;
+  async renderModel(mimemodel: IRenderMime.IMimeModel): Promise<void> {
+    const model = mimemodel.data;
 
-    if (content && content.data && typeof content.data === 'string') {
+    if (model && model.content && typeof model.content === 'string') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
+      const data = new Buffer(model.content, 'base64');
       const loadingTask = pdfjsLib.getDocument({
-        data: content.data,
+        data: data,
         enableXfa: true
       });
 

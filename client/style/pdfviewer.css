@@ -1,0 +1,17 @@
+.jupyrefs-pdfviewer {
+  width: 100%;
+  height: 100%;
+}
+
+.jupyrefs-pdfviewer-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.jupyrefs-pdfviewer-viewer {
+  position: absolute;
+}
+
+/* vim: set ft=css: */
