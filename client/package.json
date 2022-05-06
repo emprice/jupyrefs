@@ -69,7 +69,8 @@
     "annotpdf": "^1.0.15",
     "joi": "^17.6.0",
     "marked": "^4.0.15",
-    "pdfjs-dist": "^2.13.216"
+    "pdfjs-dist": "^2.13.216",
+    "socket.io": "^4.5.0"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.4.0",

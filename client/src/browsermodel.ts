@@ -29,7 +29,9 @@ export class JupyrefsBrowserModel extends IBrowserModel {
     });
 
     if (contents.type === 'directory') {
-      return contents.content as Contents.IModel[];
+      return contents.content.filter(
+        (item: Contents.IModel) => item.name.startsWith('.') === false
+      );
     } else {
       return new Array<Contents.IModel>();
     }

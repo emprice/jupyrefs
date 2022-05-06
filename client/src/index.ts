@@ -109,7 +109,8 @@ async function activate(
   mimereg.addFactory(factory);
 
   const drive = new JupyrefsDrive({
-    name: `${extName}drive`
+    name: `${extName}drive`,
+    host: 'http://localhost:5000'
   });
   docmgr.services.contents.addDrive(drive);
 

@@ -4,7 +4,7 @@ import * as path from 'path';
 import { Request, Response } from 'express';
 import * as mime from 'mime-types';
 
-interface Content {
+interface IContent {
   content?: any;
   created?: string;
   format?: string | null;
@@ -17,7 +17,7 @@ interface Content {
   writable?: boolean;
 }
 
-interface Answer {
+interface IAnswer {
   type?: string;
   created?: string | bigint;
   last_modified?: string | bigint;
@@ -26,7 +26,7 @@ interface Answer {
   size?: number | bigint | null;
   mimetype?: string | null;
   writable?: boolean;
-  content?: Content | Content[] | string | null;
+  content?: IContent | IContent[] | string | null;
   format?: string | null;
 }
 
@@ -34,13 +34,12 @@ export function contentsGet(root: string) {
   const rootPath = path.normalize(path.resolve(root));
 
   return async function (req: Request, res: Response) {
-    const answer: Answer = {};
+    const answer: IAnswer = {};
     const fullPath = path.normalize(path.join(rootPath, req.path));
 
     try {
       const stats = await fs.stat(fullPath);
 
-      answer.type = 'json';
       answer.created = stats.birthtime.toISOString();
       answer.last_modified = stats.mtime.toISOString();
       answer.path = req.path;
@@ -55,20 +54,21 @@ export function contentsGet(root: string) {
       }
 
       if (stats.isFile()) {
-        console.log('that\'s a file, fren');
+        console.log("that's a file, fren");
         res.status(500).end();
       } else if (stats.isDirectory()) {
+        answer.type = 'directory';
         answer.size = null;
         answer.mimetype = null;
 
-        if (req.query.content && Number(req.query.content) == 1) {
+        if (req.query.content && Number(req.query.content) === 1) {
           try {
             const files = await fs.readdir(fullPath);
-            let content = new Array<Content>();
+            const content = new Array<IContent>();
 
-            for (let item of files) {
+            for (const item of files) {
               const thisPath = path.normalize(path.join(fullPath, item));
-              const part: Content = {
+              const part: IContent = {
                 name: item
               };
 
@@ -99,7 +99,7 @@ export function contentsGet(root: string) {
                 part.path = path.join(req.path, item).substring(1);
                 part.size = null;
               } catch (what) {
-                const err = (what as NodeJS.ErrnoException);
+                const err = what as NodeJS.ErrnoException;
                 if (err.code === 'ENOENT') {
                   res.status(404).send('No such file or directory');
                 } else if (err.code === 'ENAMETOOLONG') {
@@ -114,18 +114,13 @@ export function contentsGet(root: string) {
             }
 
             const format: string =
-              (req.query.format && typeof req.query.format === 'string')
+              req.query.format && typeof req.query.format === 'string'
                 ? req.query.format
-                : 'text';
+                : 'json';
 
-            if (format === 'text') {
+            if (format === 'json') {
               answer.content = content;
               answer.format = 'json';
-              res.status(200).json(answer);
-            } else if (format === 'base64') {
-              const buf = new Buffer(content);
-              answer.content = buf.toString('base64');
-              answer.format = 'base64';
               res.status(200).json(answer);
             } else {
               res.status(400).send('Unrecognized format');
@@ -144,7 +139,7 @@ export function contentsGet(root: string) {
         res.status(404).send('Not a file or directory');
       }
     } catch (what) {
-      const err = (what as NodeJS.ErrnoException);
+      const err = what as NodeJS.ErrnoException;
       if (err.code === 'ENOENT') {
         res.status(404).send('No such file or directory');
       } else if (err.code === 'ENAMETOOLONG') {
@@ -154,6 +149,6 @@ export function contentsGet(root: string) {
       }
     }
   };
-};
+}
 
 // vim: set ft=typescript:

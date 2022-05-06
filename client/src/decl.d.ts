@@ -6,4 +6,6 @@ declare module 'pdfjs-dist/lib/web/event_utils.js';
 declare module 'pdfjs-dist/lib/web/pdf_link_service.js';
 declare module 'pdfjs-dist/lib/web/l10n_utils.js';
 
+declare module 'socket.io/client-dist/socket.io.js';
+
 // vim: set ft=typescript:

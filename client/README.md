@@ -1,10 +1,29 @@
-# jupyrefs client
+# jupyrefs client plugin
 
+- [Features and todos](#construction-features-and-todos)
+- [Credits and acknowledgements](#sparkles-credits-and-acknowledgements)
 - [Installing and uninstalling](#wrench-installing-and-uninstalling)
   - [Requirements](#requirements)
   - [Install](#install)
   - [Uninstall](#uninstall)
   - [Contributing](#contributing)
+
+## :construction: Features and todos
+
+- [x] Extend and override JupyterLab behavior
+- [x] Open PDF documents with Mozilla's `pdf.js`
+- [ ] Annotate PDF documents with `annotpdf`
+- [x] Browse files in a tree layout instead of simple list
+- [ ] Cache results from the file server to reduce duplicate requests
+- [ ] Notes interface using Markdown
+
+## :sparkles: Credits and acknowledgements
+
+- Primary icon by [FreeVector.com](https://www.freevector.com/chemistry-symbols-vector-27726),
+  with slight modification for compatibility with JupyterLab's light/dark theme settings
+- Other user interface icons by [Anu Rocks](https://freeicons.io/profile/730) on
+  [freeicons.io](https://freeicons.io/icon-list/regular-life-icons) with slight
+  modification to enable resizing
 
 ## :wrench: Installing and uninstalling
 

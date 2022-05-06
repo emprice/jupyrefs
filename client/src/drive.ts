@@ -1,7 +1,9 @@
 import * as zlib from 'zlib';
 
+import io from 'socket.io/client-dist/socket.io.js';
+
 import { Signal } from '@lumino/signaling';
-import { URLExt } from '@jupyterlab/coreutils';
+import { URLExt, PageConfig } from '@jupyterlab/coreutils';
 import { ModelDB } from '@jupyterlab/observables';
 import { ServerConnection, Contents } from '@jupyterlab/services';
 
@@ -15,10 +17,10 @@ export class JupyrefsDrive implements Contents.IDrive {
     this.fileChanged = new Signal<JupyrefsDrive, Contents.IChangedArgs>(this);
     this.isDisposed = false;
     this.name = options.name;
-    this.serverSettings = ServerConnection.makeSettings({
-      baseUrl: options.host
-    });
+    this.serverSettings = ServerConnection.makeSettings();
+
     this._api = '/api/contents';
+    this._baseUrl = options.host || PageConfig.getBaseUrl();
   }
 
   public fileChanged: Signal<JupyrefsDrive, Contents.IChangedArgs>;
@@ -28,11 +30,11 @@ export class JupyrefsDrive implements Contents.IDrive {
   public readonly serverSettings: ServerConnection.ISettings;
 
   private _api: string;
+  private _baseUrl: string;
 
   protected makeUrl(...args: string[]): string {
     const parts = args.map(path => URLExt.encodeParts(path));
-    const baseUrl = this.serverSettings.baseUrl;
-    return URLExt.join(baseUrl, this._api, ...parts);
+    return URLExt.join(this._baseUrl, this._api, ...parts);
   }
 
   async copy(localPath: string, toLocalDir: string): Promise<Contents.IModel> {
@@ -67,20 +69,16 @@ export class JupyrefsDrive implements Contents.IDrive {
     let url: string = this.makeUrl(localPath);
 
     const content = options && options.content ? '1' : '0';
+    const format = options && options.format ? options.format : 'json';
     const params = Object.assign(Object.assign({}, options), {
       content: content,
-      format: 'base64'
+      format: format
     });
     url += URLExt.objectToQueryString(params);
 
-    const response = await ServerConnection.makeRequest(
-      url,
-      {},
-      this.serverSettings
-    );
-    if (response.status !== 200) {
-      const err = await ServerConnection.ResponseError.create(response);
-      throw err;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw response.statusText;
     }
 
     const data = await response.json();
