@@ -11,16 +11,23 @@
   overflow-y: auto;
 }
 
-.jupyrefs-dirlisting-branch {
+.jupyrefs-dirlisting-root {
   margin: 0;
   padding: 0;
   list-style-type: none;
 }
 
+.jupyrefs-dirlisting-branch {
+  margin: 0;
+  padding-inline-start: 20px;
+  list-style-type: none;
+}
+
 .jupyrefs-dirlisting-item {
   display: flex;
-  flex-direction: column;
-  padding: 4px 12px;
+  flex-direction: row;
+  column-gap: 2px;
+  padding: 4px 6px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -40,6 +47,15 @@
 
 .jupyrefs-dirlisting-item.jupyrefs-mod-selectable:hover:not(.jupyrefs-mod-selected) {
   background: var(--jp-layout-color2);
+}
+
+.jupyrefs-dirlisting-itemicon {
+  height: 16px;
+  width: 16px;
+}
+
+.jupyrefs-dirlisting-itemicon svg {
+  height: inherit;
 }
 
 .jupyrefs-dirlisting-itemtext {
