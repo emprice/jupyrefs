@@ -1,15 +1,15 @@
 import * as zlib from 'zlib';
 
-import io from 'socket.io/client-dist/socket.io.js';
+import io from '../node_modules/socket.io/client-dist/socket.io.js';
 
 import { Signal } from '@lumino/signaling';
-import { URLExt, PageConfig } from '@jupyterlab/coreutils';
+import { URLExt } from '@jupyterlab/coreutils';
 import { ModelDB } from '@jupyterlab/observables';
 import { ServerConnection, Contents } from '@jupyterlab/services';
 
 interface IOptions {
   name: string;
-  host?: string;
+  host: string;
 }
 
 export class JupyrefsDrive implements Contents.IDrive {
@@ -20,7 +20,8 @@ export class JupyrefsDrive implements Contents.IDrive {
     this.serverSettings = ServerConnection.makeSettings();
 
     this._api = '/api/contents';
-    this._baseUrl = options.host || PageConfig.getBaseUrl();
+    this._baseUrl = options.host;
+    this._socket = io(this._baseUrl);
   }
 
   public fileChanged: Signal<JupyrefsDrive, Contents.IChangedArgs>;
@@ -31,6 +32,7 @@ export class JupyrefsDrive implements Contents.IDrive {
 
   private _api: string;
   private _baseUrl: string;
+  private _socket;
 
   protected makeUrl(...args: string[]): string {
     const parts = args.map(path => URLExt.encodeParts(path));

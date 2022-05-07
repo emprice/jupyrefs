@@ -43,13 +43,16 @@ class JupyrefsRestApi {
     this._contentsApi.get('/*', contentsGet(staticsPath));
 
     this._app = createApplication();
-    this._app.use(cors());
+    this._http = http.createServer(this._app);
+    this._io = new io.Server(this._http, {
+      cors: {
+        origin: true
+      }
+    });
 
+    this._app.use(cors());
     this._app.use('/api/contents', this._contentsApi);
     this._app.use('/api/mongo', this._mongoApi);
-
-    this._http = http.createServer(this._app);
-    this._io = new io.Server(this._http);
 
     this._io.on('connection', socket => {
       console.log('[connection event]');

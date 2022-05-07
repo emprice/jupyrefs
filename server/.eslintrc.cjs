@@ -37,3 +37,4 @@ module.exports = {
     'prefer-arrow-callback': 'error'
   }
 };
+// vim: set ft=javascript:

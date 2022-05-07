@@ -60,7 +60,8 @@ class JupyrefsManager extends Widget {
 
   async openDocument(path: string): Promise<void> {
     const model = await this._docmgr.services.contents.get(path, {
-      content: true
+      content: true,
+      format: 'base64'
     });
     const renderer = this._mimereg.createRenderer(model.mimetype);
     const mimemodel = this._mimereg.createModel({ data: { ...model } });
