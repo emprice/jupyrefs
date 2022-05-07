@@ -14,36 +14,59 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IStateDB } from '@jupyterlab/statedb';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import { LabIcon } from '@jupyterlab/ui-components';
+import { LabIcon, closeIcon } from '@jupyterlab/ui-components';
 
-import { Widget, SingletonLayout } from '@lumino/widgets';
+import { h, VirtualElement } from '@lumino/virtualdom';
+import { Widget, TabPanel, TabBar } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 import { ReadonlyPartialJSONArray } from '@lumino/coreutils';
 
 import { extName } from './common';
 import extIconStr from '!./assets/icon_primary.svg';
+import pdfIconStr from '!./assets/icon_document_pdf.svg';
 
 const extIcon = new LabIcon({
-  name: `${extName}:icon`,
+  name: `${extName}:exticon`,
   svgstr: extIconStr
 });
 
-class JupyrefsManager extends Widget {
+const pdfIcon = new LabIcon({
+  name: `${extName}:pdficon`,
+  svgstr: pdfIconStr
+});
+
+class JupyrefsTabRenderer extends TabBar.Renderer {
+  public renderCloseIcon(data: TabBar.IRenderData<any>): VirtualElement {
+    const classes = [
+      'lm-TabBar-tabCloseIcon',
+      'p-TabBar-tabCloseIcon',
+      'jp-icon-hover',
+      makeClass('manager', 'tabpanel', 'closeicon')]
+    return h.div({
+      className: classes.join(' '),
+    }, closeIcon);
+  }
+}
+
+class JupyrefsManager extends TabPanel {
   constructor(
     statedb: IStateDB,
     docmgr: IDocumentManager,
     mimereg: IRenderMimeRegistry
   ) {
-    super();
+    const renderer = new JupyrefsTabRenderer();
+    super({
+      renderer: renderer,
+      tabsMovable: true
+    });
 
     this._statedb = statedb;
     this._docmgr = docmgr;
     this._mimereg = mimereg;
 
-    this._documents = new Array<string>();
+    this._documents = new Map<string, Widget>();
 
     this.addClass(makeClass('manager'));
-    this.layout = new SingletonLayout({ fitPolicy: 'set-no-constraint' });
 
     return (async () => {
       const docs = (await this._statedb.fetch(
@@ -59,37 +82,66 @@ class JupyrefsManager extends Widget {
   }
 
   async openDocument(path: string): Promise<void> {
-    const model = await this._docmgr.services.contents.get(path, {
-      content: true,
-      format: 'base64'
-    });
-    const renderer = this._mimereg.createRenderer(model.mimetype);
-    const mimemodel = this._mimereg.createModel({ data: { ...model } });
-    await renderer.renderModel(mimemodel);
-    this.layout.widget = renderer;
+    if (this._documents.has(path) === true) {
+      // document is already open
+      this.currentWidget = this._documents.get(path) || null;
+    } else {
+      // open the document and track it
+      const model = await this._docmgr.services.contents.get(path, {
+        content: true,
+        format: 'base64'
+      });
 
-    this._documents.push(path);
+      const renderer = this._mimereg.createRenderer(model.mimetype);
+      const mimemodel = this._mimereg.createModel({ data: { ...model } });
+      await renderer.renderModel(mimemodel);
+
+      renderer.title.label = path;
+      renderer.title.icon = pdfIcon;
+      renderer.title.closable = true;
+
+      this.addWidget(renderer);
+      this.currentWidget = renderer;
+
+      (renderer as JupyrefsPDFViewer).closed.connect(async (widget) => {
+        const path = widget.filePath;
+        if (path) {
+          this._documents.delete(path);
+          await this.updateDocList();
+        }
+      });
+
+      this._documents.set(path, renderer);
+      await this.updateDocList();
+    }
+  }
+
+  protected async updateDocList(): Promise<void> {
+    const doclist = Array.from(this._documents.keys());
     await this._statedb.save(
       JupyrefsManager.idOpenDocs,
-      this._documents as ReadonlyPartialJSONArray
+      doclist as ReadonlyPartialJSONArray
     );
   }
 
-  async processMessage(msg: Message): Promise<void> {
-    if (msg.type === 'close-request') {
-      await this._statedb.remove(JupyrefsManager.idOpenDocs);
-    }
-    super.processMessage(msg);
+  protected async onCloseRequest(msg: Message): Promise<void> {
+    await this._statedb.remove(JupyrefsManager.idOpenDocs);
+    super.onCloseRequest(msg);
   }
-
-  public layout: SingletonLayout;
 
   private _statedb!: IStateDB;
   private _docmgr!: IDocumentManager;
   private _mimereg!: IRenderMimeRegistry;
-  private _documents: string[];
+  private _documents: Map<string, Widget>;
 
   static idOpenDocs = `${extName}:openDocuments`;
+}
+
+class JupyrefsMain extends MainAreaWidget<JupyrefsManager> {
+  protected async onCloseRequest(msg: Message): Promise<void> {
+    await this.content.processMessage(msg);
+    super.onCloseRequest(msg);
+  }
 }
 
 async function activate(
@@ -115,7 +167,7 @@ async function activate(
   });
   docmgr.services.contents.addDrive(drive);
 
-  let main: MainAreaWidget<JupyrefsManager>;
+  let main: JupyrefsMain;
   let browser: JupyrefsBrowser;
 
   // Add the command to the app
@@ -126,7 +178,7 @@ async function activate(
     execute: async (options: any) => {
       if (!main || main.isDisposed) {
         const content = await new JupyrefsManager(statedb, docmgr, mimereg);
-        main = new MainAreaWidget<JupyrefsManager>({ content: content });
+        main = new JupyrefsMain({ content: content });
         main.id = `${extName}:main`;
         main.title.label = 'Reference Manager';
         main.title.icon = extIcon;
@@ -182,7 +234,7 @@ async function activate(
     rank: 0
   });
 
-  const tracker = new WidgetTracker<MainAreaWidget<JupyrefsManager>>({
+  const tracker = new WidgetTracker<JupyrefsMain>({
     namespace: extName
   });
 

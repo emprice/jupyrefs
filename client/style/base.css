@@ -7,4 +7,14 @@
   --jupyrefs-brand-color1: #8fbcbb;
 }
 
+.jupyrefs-manager-tabpanel-closeicon {
+  display: flex;
+  align-items: center;
+}
+
+.jupyrefs-manager-tabpanel-closeicon svg {
+  height: 16px;
+  width: 16px;
+}
+
 /* vim: set ft=css: */

@@ -1,7 +1,11 @@
 import { makeClass } from './common';
 
 import { Widget } from '@lumino/widgets';
+import { Signal } from '@lumino/signaling';
+import { Message } from '@lumino/messaging';
+
 import { IRenderMime } from '@jupyterlab/rendermime';
+import { Contents } from '@jupyterlab/services';
 
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFViewer } from 'pdfjs-dist/lib/web/pdf_viewer.js';
@@ -46,12 +50,15 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
     this.eventBus.on('pagesinit', () => {
       this.viewer.currentScaleValue = 'page-width';
     });
+
+    this._filePath = null;
+    this._closedSignal = new Signal<JupyrefsPDFViewer, Message>(this);
   }
 
   async renderModel(mimemodel: IRenderMime.IMimeModel): Promise<void> {
-    const model = mimemodel.data;
+    const model = mimemodel.data as unknown as Contents.IModel;
 
-    if (model && model.content && typeof model.content === 'string') {
+    if (model) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
       const data = new Buffer(model.content, 'base64');
@@ -63,11 +70,26 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
       const pdfDocument = await loadingTask.promise;
       this.viewer.setDocument(pdfDocument);
       this.linkService.setDocument(pdfDocument, null);
+
+      this._filePath = model.path;
     }
+  }
+
+  public get filePath(): string | null {
+    return this._filePath;
+  }
+
+  public get closed(): Signal<JupyrefsPDFViewer, Message> {
+    return this._closedSignal;
   }
 
   protected onResize(msg: Widget.ResizeMessage): void {
     this.viewer.currentScaleValue = 'page-width';
+  }
+
+  protected onCloseRequest(msg: Message): void {
+    this._closedSignal.emit(msg);
+    super.onCloseRequest(msg);
   }
 
   static mimeType = 'application/pdf';
@@ -78,6 +100,9 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
 
   protected viewerElem: HTMLDivElement;
   protected containerElem: HTMLDivElement;
+
+  private _closedSignal: Signal<JupyrefsPDFViewer, Message>;
+  private _filePath: string | null;
 }
 
 // vim: set ft=typescript:
