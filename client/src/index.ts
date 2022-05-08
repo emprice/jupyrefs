@@ -41,10 +41,14 @@ class JupyrefsTabRenderer extends TabBar.Renderer {
       'lm-TabBar-tabCloseIcon',
       'p-TabBar-tabCloseIcon',
       'jp-icon-hover',
-      makeClass('manager', 'tabpanel', 'closeicon')]
-    return h.div({
-      className: classes.join(' '),
-    }, closeIcon);
+      makeClass('manager', 'tabpanel', 'closeicon')
+    ];
+    return h.div(
+      {
+        className: classes.join(' ')
+      },
+      closeIcon
+    );
   }
 }
 
@@ -103,7 +107,7 @@ class JupyrefsManager extends TabPanel {
       this.addWidget(renderer);
       this.currentWidget = renderer;
 
-      (renderer as JupyrefsPDFViewer).closed.connect(async (widget) => {
+      (renderer as JupyrefsPDFViewer).closed.connect(async widget => {
         const path = widget.filePath;
         if (path) {
           this._documents.delete(path);

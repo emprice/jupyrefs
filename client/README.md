@@ -19,11 +19,12 @@
 
 ## :sparkles: Credits and acknowledgements
 
-- Primary icon by [FreeVector.com](https://www.freevector.com/chemistry-symbols-vector-27726),
-  with slight modification for compatibility with JupyterLab's light/dark theme settings
-- Other user interface icons by [Anu Rocks](https://freeicons.io/profile/730) on
-  [freeicons.io](https://freeicons.io/icon-list/regular-life-icons) with slight
-  modification to enable resizing
+- Primary icon by [ic2icon](https://freeicons.io/profile/129933)
+  on [freeicons.io](https://freeicons.io/data-manager-icon-set-3/data-technology-manage-icon-426503)
+- Other user interface icons by:
+  - [Anu Rocks](https://freeicons.io/profile/730) on
+    [freeicons.io](https://freeicons.io/icon-list/regular-life-icons) with
+    slight modification to enable resizing
 
 ## :wrench: Installing and uninstalling
 

@@ -13,7 +13,7 @@ import { EventBus } from 'pdfjs-dist/lib/web/event_utils.js';
 import { PDFLinkService } from 'pdfjs-dist/lib/web/pdf_link_service.js';
 import { NullL10n } from 'pdfjs-dist/lib/web/l10n_utils.js';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.js';
-//import { AnnotationFactory } from 'annotpdf';
+import { AnnotationFactory } from 'annotpdf';
 
 const containerClass = 'pdfviewer';
 
@@ -67,9 +67,33 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
         enableXfa: true
       });
 
-      const pdfDocument = await loadingTask.promise;
-      this.viewer.setDocument(pdfDocument);
-      this.linkService.setDocument(pdfDocument, null);
+      this.pdfDocument = await loadingTask.promise;
+      this.viewer.setDocument(this.pdfDocument);
+      this.linkService.setDocument(this.pdfDocument, null);
+
+      this.pdfDocument.getData().then((data: any) => {
+        this.annotFactory = new AnnotationFactory(data);
+
+        this.viewerElem.addEventListener('click', e => {
+          const index = this.viewer.currentPageNumber;
+          const sel = `.page[data-page-number="${index}"]`;
+          const page = this.viewerElem.querySelector(sel);
+
+          if (page) {
+            const rect = page.getBoundingClientRect();
+            const body = document.body;
+            const off = [
+              rect.top + body.scrollTop,
+              rect.left + body.scrollLeft
+            ];
+            const x = e.pageX - off[0];
+            const y = e.pageY - off[1];
+
+            const pageview = this.viewer.getPageView(index - 1);
+            console.log(pageview.getPagePoint(x, y));
+          }
+        });
+      });
 
       this._filePath = model.path;
     }
@@ -100,6 +124,9 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
 
   protected viewerElem: HTMLDivElement;
   protected containerElem: HTMLDivElement;
+
+  protected pdfDocument!: pdfjsLib.PDFDocumentProxy;
+  protected annotFactory!: AnnotationFactory;
 
   private _closedSignal: Signal<JupyrefsPDFViewer, Message>;
   private _filePath: string | null;
