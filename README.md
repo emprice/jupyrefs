@@ -5,7 +5,7 @@ A weekend hobby project
 - [Features](#tada-features)
 - [Useful links](#anchor-useful-links)
   - [Graphics elements](#art-graphics-elements)
-  - [External documentation](#bookmark-tabs-external-documentation)
+  - [External documentation](#bookmark_tabs-external-documentation)
 
 ## :tada: Features
 
