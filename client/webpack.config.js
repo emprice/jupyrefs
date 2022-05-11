@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   infrastructureLogging: {
@@ -29,6 +30,16 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer']
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: 'node_modules/pdfjs-dist/web/images/*.svg',
+          to({ context, absoluteFilename }) {
+            return 'pdfjs/[name][ext]';
+          }
+        }
+      ]
     })
   ]
 };

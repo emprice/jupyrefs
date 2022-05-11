@@ -1,7 +1,6 @@
-import { makeClass } from './common';
+import { makeId, makeClass } from './common';
 import { JupyrefsDrive } from './drive';
-import { JupyrefsBrowser } from './browser';
-import { JupyrefsBrowserModel } from './browsermodel';
+import { JupyrefsSidebar } from './sidebar';
 import { JupyrefsPDFViewer } from './pdfviewer';
 
 import {
@@ -21,21 +20,21 @@ import { Widget, TabPanel, TabBar } from '@lumino/widgets';
 import { Message } from '@lumino/messaging';
 import { ReadonlyPartialJSONArray } from '@lumino/coreutils';
 
-import { extName } from './common';
+import { extName, makeName } from './common';
 import extIconStr from '!./assets/icon_primary.svg';
 import pdfIconStr from '!./assets/icon_document_pdf.svg';
 
 const extIcon = new LabIcon({
-  name: `${extName}:exticon`,
+  name: makeName('mainicon'),
   svgstr: extIconStr
 });
 
 const pdfIcon = new LabIcon({
-  name: `${extName}:pdficon`,
+  name: makeName('pdficon'),
   svgstr: pdfIconStr
 });
 
-class JupyrefsTabRenderer extends TabBar.Renderer {
+class JupyrefsClosableTabRenderer extends TabBar.Renderer {
   public renderCloseIcon(data: TabBar.IRenderData<any>): VirtualElement {
     const classes = [
       'lm-TabBar-tabCloseIcon',
@@ -58,7 +57,7 @@ class JupyrefsManager extends TabPanel {
     docmgr: IDocumentManager,
     mimereg: IRenderMimeRegistry
   ) {
-    const renderer = new JupyrefsTabRenderer();
+    const renderer = new JupyrefsClosableTabRenderer();
     super({
       renderer: renderer,
       tabsMovable: true
@@ -138,7 +137,7 @@ class JupyrefsManager extends TabPanel {
   private _mimereg!: IRenderMimeRegistry;
   private _documents: Map<string, Widget>;
 
-  static idOpenDocs = `${extName}:openDocuments`;
+  static idOpenDocs = makeName('openDocuments');
 }
 
 class JupyrefsMain extends MainAreaWidget<JupyrefsManager> {
@@ -172,10 +171,10 @@ async function activate(
   docmgr.services.contents.addDrive(drive);
 
   let main: JupyrefsMain;
-  let browser: JupyrefsBrowser;
+  let sidebar: JupyrefsSidebar;
 
   // Add the command to the app
-  const startCmd = `${extName}:start`;
+  const startCmd = makeName('start');
   app.commands.addCommand(startCmd, {
     label: 'Start Reference Manager',
     icon: extIcon,
@@ -183,31 +182,29 @@ async function activate(
       if (!main || main.isDisposed) {
         const content = await new JupyrefsManager(statedb, docmgr, mimereg);
         main = new JupyrefsMain({ content: content });
-        main.id = `${extName}:main`;
+        main.id = makeId('main');
         main.title.label = 'Reference Manager';
         main.title.icon = extIcon;
         main.title.closable = true;
       }
 
-      if (!browser || browser.isDisposed) {
-        const model = new JupyrefsBrowserModel({
+      if (!sidebar || sidebar.isDisposed) {
+        sidebar = await new JupyrefsSidebar({
           driveName: drive.name,
-          docmgr: docmgr
+          tabsMovable: false,
+          documentManager: docmgr
         });
-        browser = await new JupyrefsBrowser({
-          id: `${extName}:browser`,
-          model: model
-        });
-        browser.title.icon = extIcon;
+        sidebar.id = makeId('sidebar');
+        sidebar.title.icon = extIcon;
       }
 
-      browser.fileOpened.connect(async (sender, args) => {
+      sidebar.browser.fileOpened.connect(async (sender, args) => {
         await main.content.openDocument(args);
       });
 
       // Define the cleanup for the main widget
       main.disposed.connect((sender, args) => {
-        browser.dispose();
+        sidebar.dispose();
       });
 
       if (!tracker.has(main)) {
@@ -218,16 +215,16 @@ async function activate(
         app.shell.add(main, 'main');
       }
 
-      if (!browser.isAttached) {
-        app.shell.add(browser, 'left');
+      if (!sidebar.isAttached) {
+        app.shell.add(sidebar, 'left');
       }
 
       main.content.update();
-      browser.update();
+      sidebar.update();
 
       // All done -- activate!
       app.shell.activateById(main.id);
-      app.shell.activateById(browser.id);
+      app.shell.activateById(sidebar.id);
     }
   });
 
@@ -249,7 +246,7 @@ async function activate(
 }
 
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: `${extName}:plugin`,
+  id: makeName('plugin'),
   autoStart: true,
   requires: [
     ILauncher,

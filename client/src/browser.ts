@@ -3,7 +3,7 @@ import { IBrowserModel } from './interfaces';
 import { JupyrefsDirListing } from './dirlisting';
 
 import { Signal } from '@lumino/signaling';
-import { Widget, PanelLayout } from '@lumino/widgets';
+import { Widget, Layout, PanelLayout } from '@lumino/widgets';
 import { Toolbar, ToolbarButton } from '@jupyterlab/apputils';
 import {
   newFolderIcon,
@@ -22,6 +22,7 @@ interface IOptions {
   id: string;
   model: IBrowserModel;
   translator?: ITranslator;
+  fitPolicy: Layout.FitPolicy;
 }
 
 /**
@@ -51,7 +52,7 @@ export class JupyrefsBrowser extends Widget {
     });
     const refresh = new ToolbarButton({
       icon: refreshIcon,
-      onClick: () => this.refreshDirectory(),
+      onClick: () => this.listing.refresh(),
       tooltip: this._trans.__('Refresh File List')
     });
 
@@ -69,12 +70,12 @@ export class JupyrefsBrowser extends Widget {
     });
     this.listing.id = 'listing';
 
-    this.layout = new PanelLayout({ fitPolicy: 'set-no-constraint' });
+    this.layout = new PanelLayout({ fitPolicy: options.fitPolicy });
     this.layout.addWidget(this.toolbar);
     this.layout.addWidget(this.listing);
 
     return (async () => {
-      await this.refreshDirectory();
+      await this.update();
       return this;
     })() as unknown as JupyrefsBrowser;
   }
@@ -91,8 +92,9 @@ export class JupyrefsBrowser extends Widget {
     // no-op
   }
 
-  protected async refreshDirectory(): Promise<void> {
+  public async update(): Promise<void> {
     await this.listing.refresh();
+    super.update();
   }
 
   public layout: PanelLayout;

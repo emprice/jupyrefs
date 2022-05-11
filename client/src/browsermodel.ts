@@ -5,7 +5,7 @@ import { Contents } from '@jupyterlab/services';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 
 interface IOptions {
-  docmgr: IDocumentManager;
+  documentManager: IDocumentManager;
   driveName: string;
 }
 
@@ -13,7 +13,7 @@ export class JupyrefsBrowserModel extends IBrowserModel {
   constructor(options: IOptions) {
     super();
 
-    this._docmgr = options.docmgr;
+    this._documentManager = options.documentManager;
     this._driveName = options.driveName;
     this._currentPath = '';
   }
@@ -24,9 +24,10 @@ export class JupyrefsBrowserModel extends IBrowserModel {
       this.stripDriveName(relPath)
     );
     const fullPath = this.prependDriveName(absPath);
-    const contents = await this._docmgr.services.contents.get(fullPath, {
-      content: true
-    });
+    const contents = await this._documentManager.services.contents.get(
+      fullPath,
+      { content: true }
+    );
 
     if (contents.type === 'directory') {
       return contents.content.filter(
@@ -55,7 +56,7 @@ export class JupyrefsBrowserModel extends IBrowserModel {
     }
   }
 
-  private _docmgr: IDocumentManager;
+  private _documentManager: IDocumentManager;
   private _driveName: string;
   private _currentPath: string;
 }

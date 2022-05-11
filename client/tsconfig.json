@@ -18,7 +18,7 @@
     "strict": true,
     "strictNullChecks": true,
     "target": "es2017",
-    "types": ["node"],
+    "types": ["node", "jquery"],
     "skipLibCheck": true
   },
   "include": ["src/*"]

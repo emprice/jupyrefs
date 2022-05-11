@@ -5,16 +5,41 @@
 
 :root {
   --jupyrefs-brand-color1: #8fbcbb;
+  --jupyrefs-sidebar-icon-padding: 0 6px;
+  --jupyrefs-sidebar-icon-size: 24px;
 }
 
-.jupyrefs-manager-tabpanel-closeicon {
+#jupyrefs-sidebar-browser {
+  min-width: var(--jp-sidebar-min-width);
+}
+
+#jupyrefs-sidebar-tabbar li {
   display: flex;
   align-items: center;
+  flex-basis: min-content;
+  padding: var(--jupyrefs-sidebar-icon-padding);
+  border: 0;
+}
+
+#jupyrefs-sidebar-tabbar .jupyrefs-sidebar-tabbar-icon {
+  margin: 0;
+  height: var(--jupyrefs-sidebar-icon-size);
+  width: var(--jupyrefs-sidebar-icon-size);
 }
 
 .jupyrefs-manager-tabpanel-closeicon svg {
   height: 16px;
   width: 16px;
+}
+
+#jupyrefs-sidebar-tabbar .jupyrefs-sidebar-tabbar-icon svg {
+  height: var(--jupyrefs-sidebar-icon-size);
+  width: var(--jupyrefs-sidebar-icon-size);
+}
+
+.jupyrefs-manager-tabpanel-closeicon {
+  display: flex;
+  align-items: center;
 }
 
 /* vim: set ft=css: */

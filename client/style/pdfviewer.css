@@ -14,4 +14,9 @@
   position: absolute;
 }
 
+.jupyrefs-pdfviewer-viewer .page {
+  border-width: 0 !important;
+  margin: 9px !important;
+}
+
 /* vim: set ft=css: */
