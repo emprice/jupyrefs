@@ -19,6 +19,7 @@ import { marked } from 'marked';
 
 const $ = require('jquery'); // eslint-disable-line @typescript-eslint/no-var-requires
 require('jquery-ui/ui/widgets/draggable.js');
+require('jquery-ui/ui/widgets/resizable.js');
 
 const containerClass = 'pdfviewer';
 
@@ -66,6 +67,7 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
   }
 
   protected installClickHandler(): void {
+    const cls = makeClass(containerClass, 'note', 'hover');
     this.viewerElem.addEventListener('click', async e => {
       const pagenum = this.viewer.currentPageNumber;
       const sel = `.page[data-page-number="${pagenum}"]`;
@@ -94,6 +96,13 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
         note.style.backgroundColor = 'yellow';
 
         $(note).draggable();
+        $(note).resizable({
+          handles: "se"
+        });
+        $(note).hover(
+          () => $(note).addClass(cls),
+          () => $(note).removeClass(cls)
+        );
         $(page).append(note);
       }
     });
@@ -123,6 +132,15 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
 
   public get closed(): Signal<JupyrefsPDFViewer, Message> {
     return this._closedSignal;
+  }
+
+  public set lightTheme(light: boolean) {
+    const cls = makeClass(containerClass, 'viewer', 'dark');
+    if (light === true) {
+      this.viewerElem.classList.remove(cls);
+    } else {
+      this.viewerElem.classList.add(cls);
+    }
   }
 
   protected onResize(msg: Widget.ResizeMessage): void {

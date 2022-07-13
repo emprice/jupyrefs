@@ -8,6 +8,7 @@
   height: 100%;
   overflow: auto;
   position: relative;
+  background-color: var(--jp-layout-color4);
 }
 
 .jupyrefs-pdfviewer-viewer {
@@ -17,6 +18,14 @@
 .jupyrefs-pdfviewer-viewer .page {
   border-width: 0 !important;
   margin: 9px !important;
+}
+
+.jupyrefs-pdfviewer-viewer-dark .page {
+  filter: invert(100%);
+}
+
+.jupyrefs-pdfviewer-note-hover {
+  box-shadow: 0px 0px 20px 10px black;
 }
 
 /* vim: set ft=css: */
