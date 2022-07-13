@@ -13,6 +13,7 @@ import { ILauncher } from '@jupyterlab/launcher';
 import { IStateDB } from '@jupyterlab/statedb';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { IThemeManager } from '@jupyterlab/apputils';
 import { LabIcon, closeIcon } from '@jupyterlab/ui-components';
 
 import { h, VirtualElement } from '@lumino/virtualdom';
@@ -55,7 +56,8 @@ class JupyrefsManager extends TabPanel {
   constructor(
     statedb: IStateDB,
     docmgr: IDocumentManager,
-    mimereg: IRenderMimeRegistry
+    mimereg: IRenderMimeRegistry,
+    thememgr: IThemeManager
   ) {
     const renderer = new JupyrefsClosableTabRenderer();
     super({
@@ -66,6 +68,7 @@ class JupyrefsManager extends TabPanel {
     this._statedb = statedb;
     this._docmgr = docmgr;
     this._mimereg = mimereg;
+    this._thememgr = thememgr;
 
     this._documents = new Map<string, Widget>();
 
@@ -103,6 +106,17 @@ class JupyrefsManager extends TabPanel {
       renderer.title.icon = pdfIcon;
       renderer.title.closable = true;
 
+      const current = this._thememgr.theme || '';
+      (renderer as JupyrefsPDFViewer).lightTheme =
+        this._thememgr.isLight(current);
+
+      this._thememgr.themeChanged.connect((mgr, args) => {
+        const current = mgr.theme;
+        if (current) {
+          (renderer as JupyrefsPDFViewer).lightTheme = mgr.isLight(current);
+        }
+      });
+
       this.addWidget(renderer);
       this.currentWidget = renderer;
 
@@ -135,6 +149,7 @@ class JupyrefsManager extends TabPanel {
   private _statedb!: IStateDB;
   private _docmgr!: IDocumentManager;
   private _mimereg!: IRenderMimeRegistry;
+  private _thememgr!: IThemeManager;
   private _documents: Map<string, Widget>;
 
   static idOpenDocs = makeName('openDocuments');
@@ -153,23 +168,9 @@ async function activate(
   restorer: ILayoutRestorer,
   statedb: IStateDB,
   docmgr: IDocumentManager,
-  mimereg: IRenderMimeRegistry
+  mimereg: IRenderMimeRegistry,
+  thememgr: IThemeManager
 ): Promise<void> {
-  const factory = {
-    safe: false,
-    mimeTypes: [JupyrefsPDFViewer.mimeType],
-    defaultRank: 100,
-    createRenderer: (options: any) => new JupyrefsPDFViewer()
-  };
-
-  mimereg.addFactory(factory);
-
-  const drive = new JupyrefsDrive({
-    name: `${extName}drive`,
-    host: 'http://localhost:5000'
-  });
-  docmgr.services.contents.addDrive(drive);
-
   let main: JupyrefsMain;
   let sidebar: JupyrefsSidebar;
 
@@ -179,8 +180,25 @@ async function activate(
     label: 'Start Reference Manager',
     icon: extIcon,
     execute: async (options: any) => {
+      const factory = {
+        safe: false,
+        mimeTypes: [JupyrefsPDFViewer.mimeType],
+        defaultRank: 100,
+        createRenderer: (options: any) => new JupyrefsPDFViewer()
+      };
+
+      mimereg.addFactory(factory);
+
+      const drive = new JupyrefsDrive({
+        name: `${extName}drive`,
+        host: 'http://localhost:5000'
+      });
+
+      docmgr.services.contents.addDrive(drive);
+
       if (!main || main.isDisposed) {
-        const content = await new JupyrefsManager(statedb, docmgr, mimereg);
+        const content = await new
+          JupyrefsManager(statedb, docmgr, mimereg, thememgr);
         main = new JupyrefsMain({ content: content });
         main.id = makeId('main');
         main.title.label = 'Reference Manager';
@@ -253,7 +271,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     ILayoutRestorer,
     IStateDB,
     IDocumentManager,
-    IRenderMimeRegistry
+    IRenderMimeRegistry,
+    IThemeManager
   ],
   activate: activate
 };
