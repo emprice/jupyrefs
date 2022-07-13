@@ -5,12 +5,22 @@
 
 :root {
   --jupyrefs-brand-color1: #8fbcbb;
-  --jupyrefs-sidebar-icon-padding: 0 6px;
-  --jupyrefs-sidebar-icon-size: 24px;
+  --jupyrefs-sidebar-icon-padding: 2px 6px;
+  --jupyrefs-sidebar-icon-size: 20px;
 }
 
 #jupyrefs-sidebar-browser {
   min-width: var(--jp-sidebar-min-width);
+}
+
+#jupyrefs-sidebar-editor textarea {
+  display: block;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  box-sizing: border-box;
+  color: var(--jp-ui-font-color1);
+  background: var(--jp-layout-color1);
 }
 
 #jupyrefs-sidebar-tabbar li {

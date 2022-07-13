@@ -1,16 +1,23 @@
 import { makeId, makeClass, makeName } from './common';
 import { JupyrefsBrowser } from './browser';
 import { JupyrefsBrowserModel } from './browsermodel';
+import { JupyrefsEditor } from './editor';
 
 import { TabPanel, TabBar } from '@lumino/widgets';
 import { LabIcon } from '@jupyterlab/ui-components';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 
 import diskIconStr from '!./assets/icon_disk.svg';
+import editIconStr from '!./assets/icon_edit.svg';
 
 const diskIcon = new LabIcon({
   name: makeName('diskicon'),
   svgstr: diskIconStr
+});
+
+const editIcon = new LabIcon({
+  name: makeName('editicon'),
+  svgstr: editIconStr
 });
 
 class JupyrefsIconTabRenderer extends TabBar.Renderer {
@@ -51,7 +58,13 @@ export class JupyrefsSidebar extends TabPanel {
       });
       this._browser.title.icon = diskIcon;
 
+      this._editor = new JupyrefsEditor({
+        id: makeId('sidebar', 'editor')
+      });
+      this._editor.title.icon = editIcon;
+
       this.addWidget(this._browser);
+      this.addWidget(this._editor);
       this.fit();
 
       return this;
@@ -64,6 +77,8 @@ export class JupyrefsSidebar extends TabPanel {
 
   private _browser!: JupyrefsBrowser;
   private _browserModel!: JupyrefsBrowserModel;
+
+  private _editor!: JupyrefsEditor;
 }
 
 // vim: set ft=typescript:
