@@ -67,7 +67,6 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
   }
 
   protected installClickHandler(): void {
-    const cls = makeClass(containerClass, 'note', 'hover');
     this.viewerElem.addEventListener('click', async e => {
       const pagenum = this.viewer.currentPageNumber;
       const sel = `.page[data-page-number="${pagenum}"]`;
@@ -87,23 +86,34 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
         const pageview = this.viewer.getPageView(pagenum - 1);
         const [px, py] = pageview.getPagePoint(x, y);
 
-        const note = document.createElement('div');
-        note.style.width = '50px';
-        note.style.height = '50px';
-        note.style.left = `${x}px`;
-        note.style.top = `${y}px`;
-        note.style.position = 'absolute';
-        note.style.backgroundColor = 'yellow';
+        const highlight = document.createElement('div');
+        highlight.style.width = '50px';
+        highlight.style.height = '50px';
+        highlight.style.left = `${x}px`;
+        highlight.style.top = `${y}px`;
+        highlight.style.position = 'absolute';
+        highlight.classList.add(makeClass(containerClass, 'note'));
 
-        $(note).draggable();
-        $(note).resizable({
+        const note = document.createElement('div');
+        note.style.width = '100%';
+        note.style.height = '100%';
+        note.style.position = 'relative';
+        note.style.backgroundColor = 'yellow';
+        note.classList.add(makeClass(containerClass, 'note', 'content'));
+
+        $(highlight).draggable();
+        $(highlight).resizable({
           handles: "se"
         });
+
+        const active = makeClass(containerClass, 'note', 'highlight');
         $(note).hover(
-          () => $(note).addClass(cls),
-          () => $(note).removeClass(cls)
+          () => $(highlight).addClass(active),
+          () => $(highlight).removeClass(active)
         );
-        $(page).append(note);
+
+        $(highlight).append(note);
+        $(page).append(highlight);
       }
     });
   }
