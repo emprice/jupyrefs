@@ -1,15 +1,19 @@
 # jupyrefs
 
-A weekend hobby project
+- [Features and todos](#construction-features-and-todos)
+- [Credits and acknowledgements](#sparkles-credits-and-acknowledgements)
+- [Installing and uninstalling](#wrench-installing-and-uninstalling)
 
-- [Features](#tada-features)
-- [Useful links](#anchor-useful-links)
-  - [Graphics elements](#art-graphics-elements)
-  - [External documentation](#bookmark_tabs-external-documentation)
+## :construction: Features and todos
 
-## :tada: Features
+- [x] Extend and override JupyterLab behavior
+- [x] Open PDF documents with Mozilla's `pdf.js`
+- [ ] Annotate PDF documents with `annotpdf`
+- [x] Browse files in a tree layout instead of simple list
+- [ ] Cache results from the file server to reduce duplicate requests
+- [ ] Notes interface using Markdown
 
-## :anchor: Useful links
+## :sparkles: Credits and acknowledgements
 
 ### :art: Graphics elements
 
@@ -22,11 +26,11 @@ A weekend hobby project
 
 ### :bookmark_tabs: External documentation
 
-- [Jupyter server REST API](https://jupyter-server.readthedocs.io/en/latest/developers/rest-api.html)
-- [Express.js API](https://expressjs.com/en/4x/api.html)
-- [socket.io chat example](https://socket.io/get-started/chat)
-- [socket.io CRUD example](https://socket.io/get-started/basic-crud-application)
 - [@jupyterlab modules](https://jupyterlab.readthedocs.io/en/stable/api/modules.html)
 - [JupyterLab extension developer guide](https://jupyterlab.readthedocs.io/en/stable/extension/extension_dev.html)
+
+## :wrench: Installing and uninstalling
+
+Coming soon.
 
 <!-- vim: set ft=markdown: -->

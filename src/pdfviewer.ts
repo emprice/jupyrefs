@@ -87,26 +87,20 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
         const [px, py] = pageview.getPagePoint(x, y);
 
         const highlight = document.createElement('div');
-        highlight.style.width = '50px';
-        highlight.style.height = '50px';
         highlight.style.left = `${x}px`;
         highlight.style.top = `${y}px`;
         highlight.style.position = 'absolute';
         highlight.classList.add(makeClass(containerClass, 'note'));
 
         const note = document.createElement('div');
-        note.style.width = '100%';
-        note.style.height = '100%';
-        note.style.position = 'relative';
-        note.style.backgroundColor = 'yellow';
         note.classList.add(makeClass(containerClass, 'note', 'content'));
 
         $(highlight).draggable();
         $(highlight).resizable({
-          handles: "se"
+          handles: 'se'
         });
 
-        const active = makeClass(containerClass, 'note', 'highlight');
+        const active = makeClass(containerClass, 'note', 'shadow');
         $(note).hover(
           () => $(highlight).addClass(active),
           () => $(highlight).removeClass(active)
@@ -145,12 +139,7 @@ export class JupyrefsPDFViewer extends Widget implements IRenderMime.IRenderer {
   }
 
   public set lightTheme(light: boolean) {
-    const cls = makeClass(containerClass, 'viewer', 'dark');
-    if (light === true) {
-      this.viewerElem.classList.remove(cls);
-    } else {
-      this.viewerElem.classList.add(cls);
-    }
+    this.viewerElem.dataset.theme = (light === true) ? 'light' : 'dark';
   }
 
   protected onResize(msg: Widget.ResizeMessage): void {

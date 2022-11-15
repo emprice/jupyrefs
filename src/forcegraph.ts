@@ -221,7 +221,7 @@ export function makeForceGraph(
     return (elem: any, ...args: any) => fn(elem);
   }
 
-  return Object.assign(svg.node(), { scales: { color } });
+  return Object.assign(Object.assign({}, svg.node()), { scales: { color } });
 }
 
 // vim: set ft=typescript:

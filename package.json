@@ -1,19 +1,132 @@
 {
   "name": "jupyrefs",
   "version": "1.0.0",
-  "description": "JupyterLab-based reference manager",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/emprice/jupyrefs.git"
+  "description": "JupyterLab reference manager",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension"
+  ],
+  "homepage": "https://github.com/emprice/jupyrefs",
+  "bugs": {
+    "url": "https://github.com/emprice/jupyrefs/issues"
   },
+  "license": "MIT",
   "author": {
     "name": "Ellen M. Price",
     "email": "ellen.price81@gmail.com"
   },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/emprice/jupyrefs/issues"
+  "engines": {
+    "node": "16.x"
   },
-  "homepage": "https://github.com/emprice/jupyrefs#readme"
+  "files": [
+    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+    "style/**/*.{css,css.map,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "style": "style/index.css",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emprice/jupyrefs.git"
+  },
+  "scripts": {
+    "build": "npm run build:css:dev && npm run build:lib && npm run build:labextension:dev",
+    "build:prod": "npm run clean && npm run build:css && npm run build:lib && npm run build:labextension",
+    "build:labextension": "jupyter labextension build .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
+    "build:lib": "npx tsc",
+    "build:css": "npx sass -c -s compressed scss/jupyrefs.scss style/index.css",
+    "build:css:dev": "npx sass -c scss/jupyrefs.scss style/index.css",
+    "clean": "npm run clean:lib",
+    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
+    "clean:lintcache": "rimraf .eslintcache",
+    "clean:labextension": "rimraf jupyrefs/labextension",
+    "clean:all": "npm run clean:lib && npm run clean:labextension && npm run clean:lintcache",
+    "eslint": "npx eslint . --cache --ext .ts,.tsx --fix",
+    "eslint:check": "npx eslint . --cache --ext .ts,.tsx",
+    "install:extension": "npm run build",
+    "lint": "npm run prettier && npm run eslint",
+    "lint:check": "npm run prettier:check && npm run eslint:check",
+    "prettier": "npx prettier \"**/*{.ts,.tsx,.js,.jsx,.json,.md}\" --write",
+    "prettier:base": "npx prettier \"**/*{.ts,.tsx,.js,.jsx,.json,.md}\"",
+    "prettier:check": "npx prettier \"**/*{.ts,.tsx,.js,.jsx,.json,.md}\" --check",
+    "watch": "run-p watch:src watch:labextension",
+    "watch:src": "tsc -w",
+    "watch:labextension": "jupyter labextension watch ."
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^3.5.0",
+    "@jupyterlab/apputils": "^3.5.0",
+    "@jupyterlab/docmanager": "^3.5.0",
+    "@jupyterlab/filebrowser": "^3.5.0",
+    "@jupyterlab/launcher": "^3.5.0",
+    "@jupyterlab/pdf-extension": "^3.5.0",
+    "@jupyterlab/ui-components": "^3.5.0",
+    "@lumino/widgets": "^1.31.1",
+    "@types/d3": "^7.1.0",
+    "@types/webpack": "^5.28.0",
+    "dompurify": "^2.3.6",
+    "joi": "^17.6.0",
+    "marked": "^4.0.15",
+    "pdfjs-dist": "^3.0.279",
+    "socket.io": "^4.5.0"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^3.5.0",
+    "@types/dompurify": "^2.3.3",
+    "@types/jquery": "^3.5.14",
+    "@types/jqueryui": "^1.12.16",
+    "@types/marked": "^4.0.3",
+    "@types/mime-types": "^2.1.1",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/parser": "^5.42.1",
+    "assert": "^2.0.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "copy-webpack-plugin": "^11.0.0",
+    "eslint": "^8.27.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-tsdoc": "^0.2.17",
+    "fit-curve": "^0.2.0",
+    "jquery": "^3.6.0",
+    "jquery-ui": "^1.13.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.6.2",
+    "rimraf": "^3.0.2",
+    "sass": "^1.56.1",
+    "stream-browserify": "^3.0.0",
+    "typescript": "^4.6.4",
+    "util": "^0.12.4",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2",
+    "yarn": "^1.22.18"
+  },
+  "sideEffects": [
+    "style/*.css",
+    "style/*.css.map",
+    "style/index.js"
+  ],
+  "styleModule": "style/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "jupyterlab": {
+    "extension": true,
+    "outputDir": "jupyrefs/labextension",
+    "webpackConfig": "./webpack.config.js"
+  },
+  "jupyter-releaser": {
+    "hooks": {
+      "before-build-npm": [
+        "python -m pip install jupyterlab=^3.5.0",
+        "jlpm"
+      ],
+      "before-build-python": [
+        "jlpm clean:all"
+      ]
+    }
+  }
 }

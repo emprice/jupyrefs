@@ -27,7 +27,7 @@ interface IOptions {
 
 /**
  * A widget which hosts a file browser, based heavily on the default
- * implementation in JupyterLab: @jupyterlab/filebrowser/browser.js
+ * implementation in JupyterLab, \@jupyterlab/filebrowser/browser.js
  */
 export class JupyrefsBrowser extends Widget {
   constructor(options: IOptions) {
