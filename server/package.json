@@ -40,7 +40,7 @@
     "mime-types": "^2.1.35",
     "mongodb": "^4.5.0",
     "serve-index": "^1.9.1",
-    "socket.io": "^4.5.0"
+    "socket.io": "^4.5.2"
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.1",
